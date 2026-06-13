@@ -41,6 +41,69 @@ public class VariableRedefinition(
     }
 }
 
+public class ArithmeticAssignment(
+    IdentifierExpression identifier,
+    string operation,
+    Expression value) : Statement
+{
+    public IdentifierExpression Identifier { get; } = identifier;
+    public string Operation { get; } = operation;
+    public Expression Value { get; } = value;
+
+    public override VoxValue Execute(Scope scope)
+    {
+        var existing = scope.GetValue(Identifier);
+        VoxValue newVal = existing;
+        if (existing is { Type: VoxValueType.Number })
+        {
+            var pVal = ExpressionMath.EvaluateValue(Value, scope);
+            if (pVal is not {Type: VoxValueType.Number}) throw new ArithmeticException($"Attempted to add value of type {pVal.Type} to {existing.Type}");
+            
+            newVal = Operation switch
+            {
+                "+=" => existing + pVal,
+                "-=" => existing - pVal,
+                "*=" => existing * pVal,
+                "/=" => existing / pVal,
+                "%=" => existing % pVal,
+                "^=" => Math.Pow(existing, pVal),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+        if (existing is { Type: VoxValueType.String } && Operation is "+=" or "*=")
+        {
+            var pVal = ExpressionMath.EvaluateValue(Value, scope);
+            
+            if (Operation == "+=") newVal = existing.ToString() + pVal.ToString();
+            if (Operation == "*=" && pVal is { Type: VoxValueType.Number })
+            {
+                newVal = string.Concat(Enumerable.Repeat(existing.ToString(), (int)pVal));
+            }
+        }
+        scope.SetValue(Identifier, newVal);
+        return VoxValue.Null;
+    }
+}
+
+public class IncrementAssignment(IdentifierExpression identifier, bool negative) : Statement
+{
+    public IdentifierExpression Identifier { get; } = identifier;
+    public double Sign { get; } = negative ? -1 : 1;
+
+    public override VoxValue Execute(Scope scope)
+    {
+        var existing = scope.GetValue(Identifier);
+        VoxValue newVal = existing;
+        if (existing is { Type: VoxValueType.Number })
+        {
+            newVal = existing + Sign;
+        }
+        scope.SetValue(Identifier, newVal);
+        
+        return VoxValue.Null;
+    }
+}
+
 public class StatementSet(List<Statement> statements) : Statement
 {
     public List<Statement> Statements { get; } = statements;

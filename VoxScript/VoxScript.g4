@@ -16,6 +16,8 @@ action
     | func_define
     | var_define
     | var_set
+    | var_arith
+    | var_incre
     ;
     
 cont_if: CONT_IF '(' expression ')' (('{' actionSet? '}') | action) cont_else?;
@@ -29,6 +31,8 @@ func_call: identifier '(' (expression (',' expression)*)? ')';
 func_define: OBJ_FUNCTION identifier '(' (var_inst (',' var_inst)*)? ')' (('{' actionSet? '}') | action);
 var_define: (OBJ_VAR | OBJ_CONST) var_inst '=' expression;
 var_set: identifier '=' expression;
+var_arith: identifier ARITH_ASSIGN expression;
+var_incre: identifier (INCREMENT | DECREMENT);
 var_inst: identifier (':' identifier)?;
 
 for_object: identifier ',' identifier 'in' expression;
@@ -122,9 +126,10 @@ fragment LEFT_CURLY: '{';
 fragment RIGHT_CURLY: '}';
 
 // Operators
-MUL_DIV: MULTIPLY | DIVIDE;
+MUL_DIV: MULTIPLY | DIVIDE | MODULO;
 ADD_SUB: PLUS | MINUS;
 COMPARE: COND_EQUAL | COND_NOTEQUAL | COND_GREATERTHAN | COND_LESSTHAN | COND_GREATEROREQUAL | COND_LESSOREQUAL;
+ARITH_ASSIGN: ADD_DIRECT | SUB_DIRECT | MULT_DIRECT | DIV_DIRECT | EXPO_DIRECT | MOD_DIRECT;
 
 // >Eval
 PLUS: '+';
@@ -132,6 +137,7 @@ MINUS: '-';
 MULTIPLY: '*';
 DIVIDE: '/';
 EXPONENT: '^';
+MODULO: '%';
 EQUALS: '=';
 // >Direct
 INCREMENT: '++';
@@ -141,6 +147,7 @@ SUB_DIRECT: '-=';
 MULT_DIRECT: '*=';
 DIV_DIRECT: '/=';
 EXPO_DIRECT: '^=';
+MOD_DIRECT: '%=';
 // >Conditions
 COND_EQUAL: '==';
 COND_NOTEQUAL: '!=';

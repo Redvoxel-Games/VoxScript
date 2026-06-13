@@ -171,6 +171,26 @@ public interface IVoxScriptListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitVar_set([NotNull] VoxScriptParser.Var_setContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.var_arith"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterVar_arith([NotNull] VoxScriptParser.Var_arithContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.var_arith"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitVar_arith([NotNull] VoxScriptParser.Var_arithContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.var_incre"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterVar_incre([NotNull] VoxScriptParser.Var_increContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.var_incre"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitVar_incre([NotNull] VoxScriptParser.Var_increContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="VoxScriptParser.var_inst"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

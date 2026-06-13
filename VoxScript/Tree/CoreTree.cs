@@ -94,6 +94,9 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
 
         if (context.cont_break() != null) return new BreakStatement();
         if (context.cont_continue() != null) return new ContinueStatement();
+        
+        if (context.var_arith() != null) return (ArithmeticAssignment)Visit(context.var_arith());
+        if (context.var_incre() != null) return (IncrementAssignment)Visit(context.var_incre());
 
         throw new NotImplementedException($"{GetLineString(context)} Unknown statement");
     }
@@ -381,5 +384,22 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
     public override AstNode VisitCont_return(Cont_returnContext context)
     {
         return new ReturnStatement((Expression)Visit(context.expression()));
+    }
+
+    public override AstNode VisitVar_arith(Var_arithContext context)
+    {
+        var identifier = (IdentifierExpression)Visit(context.identifier());
+        var operation = context.ARITH_ASSIGN().GetText();
+        var value = (Expression)Visit(context.expression());
+
+        return new ArithmeticAssignment(identifier, operation, value);
+    }
+
+    public override AstNode VisitVar_incre(Var_increContext context)
+    {
+        var identifier = (IdentifierExpression)Visit(context.identifier());
+        var negative = context.INCREMENT() == null;
+        
+        return new IncrementAssignment(identifier, negative);
     }
 }

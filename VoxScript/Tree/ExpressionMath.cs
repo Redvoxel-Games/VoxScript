@@ -220,6 +220,11 @@ public static class ExpressionMath
                     {
                         return v1.Value.NumberValue + v2.Value.NumberValue;
                     }
+
+                    if (left is VoxValue val1 && right is VoxValue val2)
+                    {
+                        return val1 + val2;
+                    }
                     if (left is string str)
                     {
                         if (right is string str2)

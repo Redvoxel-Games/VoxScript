@@ -68,24 +68,47 @@ public class Program
             var result = addNum(1, 2)
             print(result)
             """;
+        const string abstractTest =
+            """
+            print(abst.a + abst.b)
+            """;
+        const string arithTest =
+            """
+            var a = 11
+            print(a)
+            a%=10
+            print(a)
+            """;
         
-        var scriptHandler = new VoxScriptHandler(scriptTest);
+        var scriptHandler = new VoxScriptHandler(arithTest);
 
         scriptHandler.AddContext(new Context());
 
         var externals = new TestExternals();
         
         scriptHandler.SetGlobal("obj", externals);
+        scriptHandler.SetGlobal("abst", new AbstractTest2());
         
         scriptHandler.Run();
     }
 }
 
-[ExposeToScript(ContextType.Joined, "context")]
 public class TestExternals
 {
     [ExposeAs("num")]
     public double number = 3.14159;
+}
+
+public abstract class AbstractTest1
+{
+    [ExposeAs]
+    public string a = "Hello,";
+}
+
+public class AbstractTest2 : AbstractTest1
+{
+    [ExposeAs]
+    public string b = " World!";
 }
 
 [ExposeToScript(ContextType.Individual)]

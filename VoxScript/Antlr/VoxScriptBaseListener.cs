@@ -204,6 +204,30 @@ public partial class VoxScriptBaseListener : IVoxScriptListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitVar_set([NotNull] VoxScriptParser.Var_setContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.var_arith"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterVar_arith([NotNull] VoxScriptParser.Var_arithContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.var_arith"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitVar_arith([NotNull] VoxScriptParser.Var_arithContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.var_incre"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterVar_incre([NotNull] VoxScriptParser.Var_increContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.var_incre"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitVar_incre([NotNull] VoxScriptParser.Var_increContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="VoxScriptParser.var_inst"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

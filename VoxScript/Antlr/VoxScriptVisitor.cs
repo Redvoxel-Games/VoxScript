@@ -116,6 +116,18 @@ public interface IVoxScriptVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitVar_set([NotNull] VoxScriptParser.Var_setContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="VoxScriptParser.var_arith"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitVar_arith([NotNull] VoxScriptParser.Var_arithContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="VoxScriptParser.var_incre"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitVar_incre([NotNull] VoxScriptParser.Var_increContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="VoxScriptParser.var_inst"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

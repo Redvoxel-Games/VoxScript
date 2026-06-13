@@ -151,6 +151,10 @@ public readonly struct VoxValue : IEquatable<VoxValue>
         {
             return left.Value.NumberValue + right.Value.NumberValue;
         }
+        if (left.Type == VoxValueType.String || right.Type == VoxValueType.String)
+        {
+            return left.ToString() + right.ToString();
+        }
         return Null;
     }
 
