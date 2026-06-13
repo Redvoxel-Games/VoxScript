@@ -20,21 +20,25 @@ Context example:
 [ExposeToScript(ContextType.Individual)]
 public class Context
 {
-    [ExposeAs("print")] public VoxValue Print(params VoxValue[] input)
+    [ExposeAs("print")]
+    public VoxValue Print(params VoxValue[] input)
     {
         string str = input[0].ToString();
         foreach (var inp in input[1..])
         {
             str += " " + inp.ToString();
         }
-        Console.WriteLine(str);
-
+        Console.WriteLine(": "+str);
         return VoxValue.Null;
     }
 
-    [ExposeAs("add")] public VoxValue Add(VoxValue a, VoxValue b)
+    [ExposeAs("addNum")]
+    public double Add(double a, double b)
     {
         return a + b;
     }
 }
 ```
+Methods that you expose to a script automatically convert to and from VoxValues.
+
+Types are not currently implemented.
