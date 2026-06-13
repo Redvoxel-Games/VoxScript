@@ -63,8 +63,13 @@ public class Program
             }
             print(testFunc())
             """;
+        const string scriptTest =
+            """
+            var result = addNum(1, 2)
+            print(result)
+            """;
         
-        var scriptHandler = new VoxScriptHandler(forTest);
+        var scriptHandler = new VoxScriptHandler(scriptTest);
 
         scriptHandler.AddContext(new Context());
 
@@ -82,10 +87,12 @@ public class TestExternals
     [ExposeAs("num")]
     public double number = 3.14159;
 }
+
 [ExposeToScript(ContextType.Individual)]
 public class Context
 {
-    [ExposeAs("print")] public VoxValue Print(params VoxValue[] input)
+    [ExposeAs("print")]
+    public VoxValue Print(params VoxValue[] input)
     {
         string str = input[0].ToString();
         foreach (var inp in input[1..])
@@ -94,5 +101,11 @@ public class Context
         }
         Console.WriteLine(": "+str);
         return VoxValue.Null;
+    }
+
+    [ExposeAs("addNum")]
+    public double Add(double a, double b)
+    {
+        return a + b;
     }
 }

@@ -5,6 +5,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>VoxScript</Title>
+    <Authors>Redvoxel Games</Authors>
+    <Description>A basic scripting language</Description>
+    <PackageProjectUrl>https://github.com/Redvoxel-Games/VoxScript</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Redvoxel-Games/VoxScript/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>

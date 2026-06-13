@@ -141,10 +141,38 @@ public static class ExpressionMath
             return obj;
         }
 
-        if (expression is BinaryExpression or CallExpression)
+        if (expression is BinaryExpression)
         {
             var expr = EvaluateExpression(expression, scope);
             return VoxValue.FromObject(expr);
+        }
+        
+        if (expression is CallExpression call)
+        {
+            if (call.Target is FunctionExpression function)
+            {
+                return function.Body.Execute(scope);
+            }
+            else if (call.Target is IdentifierExpression id)
+            {
+                var val = scope.GetValue(id);
+                if (val.Type == VoxValueType.Function)
+                {
+                    var func = (VoxFunctionBase?)val.Reference;
+                    if (func == null) return VoxValue.Null;
+
+                    List<VoxValue> inputs = [];
+
+                    foreach (var expr in call.Arguments)
+                    {
+                        inputs.Add(EvaluateValue(expr, scope));
+                    }
+
+                    var returned = func.Invoke(inputs);
+                    
+                    return returned;
+                }
+            }
         }
         
         if (expression is FunctionExpression functionExpression)

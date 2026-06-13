@@ -59,47 +59,8 @@ public class VoxScriptHandler
                 if (exposeAs != null)
                 {
                     string methodName = exposeAs.Name ?? methodInfo.Name;
-                    
-                    ContextFunction func = new ContextFunction(args =>
-                    {
-                        var parameters = methodInfo.GetParameters();
 
-                        object? result = null;
-
-                        if (parameters.LastOrDefault()?.GetCustomAttribute<ParamArrayAttribute>() != null)
-                        {
-                            int fixedCount = parameters.Length - 1;
-
-                            object[] invokeArgs = new object[parameters.Length];
-
-                            // Fixed parameters
-                            for (int i = 0; i < fixedCount; i++)
-                            {
-                                invokeArgs[i] = args[i];
-                            }
-
-                            // Params parameter
-                            Type elementType = parameters[^1].ParameterType.GetElementType()!;
-                            Array paramArray = Array.CreateInstance(
-                                elementType,
-                                args.Count - fixedCount);
-
-                            for (int i = fixedCount; i < args.Count; i++)
-                            {
-                                paramArray.SetValue(args[i], i - fixedCount);
-                            }
-
-                            invokeArgs[^1] = paramArray;
-
-                            result = methodInfo.Invoke(context, invokeArgs);
-                        }
-
-                        return result is VoxValue value
-                            ? value
-                            : VoxValue.Null;
-                    });
-
-                    ScriptRoot.GlobalScope.SetValue(methodName, func);
+                    ScriptRoot.GlobalScope.SetValue(methodName, ExposeToScriptAttribute.ToFunction(methodInfo, context));
                 }
             }
         }
