@@ -1,5 +1,6 @@
 A basic scripting language made in C#.
-<br />Created because there's no good C# binding for [Luau](https://luau.org/)
+
+Created because there's no good C# binding for [Luau](https://luau.org/)
 
 Setup example:
 ```csharp

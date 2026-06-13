@@ -6,15 +6,20 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    
     <Title>VoxScript</Title>
     <Authors>Redvoxel Games</Authors>
     <Description>A basic scripting language</Description>
     <PackageProjectUrl>https://github.com/Redvoxel-Games/VoxScript</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/Redvoxel-Games/VoxScript/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/Redvoxel-Games/VoxScript</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+    <None Include="../README.md" Pack="true" PackagePath="\"/>
+    <None Include="../LICENSE" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>
