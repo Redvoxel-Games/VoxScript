@@ -1,1 +1,1 @@
-﻿
+﻿global using VVT = VoxScript.Runtime.VoxValueType;

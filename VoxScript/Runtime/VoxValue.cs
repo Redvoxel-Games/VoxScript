@@ -14,6 +14,7 @@ public enum VoxValueType
     Object,
     Function,
     ExternalValue,
+    ExternalObject,
     Return, // Cancels current function (or script if it doesn't path to a function) execution and carries a single value
     Break, // Breaks highest loop, Carries no value
     Continue, // Skips highest loop, Carries no value
@@ -55,7 +56,7 @@ public readonly struct VoxValue : IEquatable<VoxValue>
     {
         return new VoxValue(VoxValueType.Boolean, new ValueUnion { BooleanValue = boolean });
     }
-    public static VoxValue Object(VoxObject obj)
+    public static VoxValue Object(ScriptObject obj)
     {
         return new VoxValue(VoxValueType.Object, default, obj);
     }
@@ -113,7 +114,7 @@ public readonly struct VoxValue : IEquatable<VoxValue>
     public static implicit operator VoxValue(string str) => String(str);
     public static implicit operator VoxValue(bool boolean) => Boolean(boolean);
     public static implicit operator VoxValue(VoxFunctionBase func) => Function(func);
-    public static implicit operator VoxValue(VoxObject obj) => Object(obj);
+    public static implicit operator VoxValue(ScriptObject obj) => Object(obj);
 
     public static implicit operator double(VoxValue value) => value.Value.NumberValue;
     public static implicit operator string(VoxValue value) => value.ToString();
@@ -134,7 +135,7 @@ public readonly struct VoxValue : IEquatable<VoxValue>
         if (obj is string str) return String(str);
         if (obj is bool boolean) return Boolean(boolean);
         if (obj is VoxFunctionBase func) return Function(func);
-        if (obj is VoxObject obj2) return Object(obj2);
+        if (obj is ScriptObject obj2) return Object(obj2);
         if (obj is VoxValue value)
         {
             if (value.Type == VoxValueType.Number) return Number(value.Value.NumberValue);

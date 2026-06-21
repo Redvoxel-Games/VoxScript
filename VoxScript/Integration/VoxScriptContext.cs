@@ -78,44 +78,9 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
                     });
     }
 
-    public static VoxObject ToVoxObject(object obj)
+    public static ScriptObject ToVoxObject(object obj)
     {
-        var objType = obj.GetType();
-        
-        var fieldInfos = objType.GetFields();
-        var methodInfos = objType.GetMethods();
-        
-        var voxObject = new VoxObject();
-            
-        foreach (var methodInfo in methodInfos)
-        {
-            var exposeAs = methodInfo.GetCustomAttributes(typeof(ExposeAsAttribute), false).FirstOrDefault() as ExposeAsAttribute;
-
-            if (exposeAs != null)
-            {
-                string name = exposeAs.Name ?? methodInfo.Name;
-                    
-                ContextFunction func = ToFunction(methodInfo, obj);
-
-                voxObject[name] = func;
-            }
-        }
-
-        foreach (var fieldInfo in fieldInfos)
-        {
-            var exposeAs = fieldInfo.GetCustomAttributes(typeof(ExposeAsAttribute), false).FirstOrDefault() as ExposeAsAttribute;
-
-            if (exposeAs != null)
-            {
-                string name = exposeAs.Name ?? fieldInfo.Name;
-                    
-                VoxValue value = new VoxValue(VoxValueType.ExternalValue, default, new ExternalField(fieldInfo, obj));
-
-                voxObject[name] = value;
-            }
-        }
-        
-        return voxObject;
+        return new VoxExternalObject(obj);
     }
 }
 

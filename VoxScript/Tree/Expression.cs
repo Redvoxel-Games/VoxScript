@@ -94,7 +94,12 @@ public class IdentifierExpression(List<Expression> path) : Expression
 
     public override string ToString()
     {
-        return string.Join(".", Path);
+        var str = "";
+        foreach (var m in Path)
+        {
+            str += m + ", ";
+        }
+        return str;
     }
 
     public static implicit operator IdentifierExpression(string single)

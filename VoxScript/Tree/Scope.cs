@@ -53,16 +53,17 @@ public class Scope(Scope? parent=null)
         
         if (scopeToSetIn._values.TryGetValue(first, out var existingValue))
         {
-            var objectToSetIn = ExploreTree(existingValue, path);
+            var result = ExploreTree(existingValue, path);
+            var objectToSetIn = result.returned;
 
             if (objectToSetIn.Type == VoxValueType.Object)
             {
-                var obj = (VoxObject?)objectToSetIn.Reference;
+                var obj = (ScriptObject?)objectToSetIn.Reference;
                 if (obj != null)
                 {
-                    if (obj[path.Last()].Type == VoxValueType.ExternalValue)
+                    if (obj.GetValue(path.Last()).Type == VoxValueType.ExternalValue)
                     {
-                        var fieldObj = obj[path.Last()].Reference;
+                        var fieldObj = obj.GetValue(path.Last()).Reference;
                         if (fieldObj is ExternalField { readOnly: false } field)
                         {
                             object nativeValue = null!;
@@ -77,14 +78,16 @@ public class Scope(Scope? parent=null)
                     }
                     else
                     {
-                        obj[path.Last()] = value;
+                        obj.SetValue(path.Last(), value);
                     }
                 }
             }
         }
     }
 
-    private VoxValue ExploreTree(VoxValue root, List<VoxValue> accessor)
+    private record TreeResult(VoxValue returned, bool exitedAt0);
+
+    private TreeResult ExploreTree(VoxValue root, List<VoxValue> accessor)
     {
         while (true)
         {
@@ -93,16 +96,16 @@ public class Scope(Scope? parent=null)
 
             if (withoutFirst.Count <= 1)
             {
-                return root;
+                return new TreeResult(root, withoutFirst.Count == 0);
             }
 
             var newFirst = withoutFirst[0];
 
-            if (root.Type != VoxValueType.Object) return VoxValue.Null;
-            var obj = (VoxObject?)root.Reference;
-            if (obj == null) return VoxValue.Null;
+            if (root.Type != VoxValueType.Object) return new TreeResult(VoxValue.Null, false);
+            var obj = (ScriptObject?)root.Reference;
+            if (obj == null) return new TreeResult(VoxValue.Null, false);
 
-            VoxValue newValue = obj[newFirst];
+            VoxValue newValue = obj.GetValue(newFirst);
             root = newValue;
             accessor = withoutFirst;
         }
@@ -119,7 +122,8 @@ public class Scope(Scope? parent=null)
         List<VoxValue> path = [];
         foreach (var expr in rawPath)
         {
-            path.Add(ExpressionMath.EvaluateValue(expr, this));
+            var val = ExpressionMath.EvaluateValue(expr, this);
+            path.Add(val);
         }
         
         var first = path.FirstOrDefault();
@@ -134,25 +138,32 @@ public class Scope(Scope? parent=null)
                     return VoxValue.FromObject(field.fieldInfo.GetValue(field.reference));
                 }
             }
-            
-            var objectToGetIn = ExploreTree(value, path);
+
+            var result = ExploreTree(value, path);
+            var objectToGetIn = result.returned;
 
             if (objectToGetIn.Type == VoxValueType.Object)
             {
-                var obj = (VoxObject?)objectToGetIn.Reference;
+                var obj = (ScriptObject?)objectToGetIn.Reference;
                 if (obj != null)
                 {
-                    if (obj[path.Last()].Type == VoxValueType.ExternalValue)
+                    if (obj.GetValue(path.Last()).Type == VoxValueType.ExternalValue)
                     {
-                        var fieldObj = obj[path.Last()].Reference;
+                        var fieldObj = obj.GetValue(path.Last()).Reference;
                         if (fieldObj is ExternalField field)
                         {
-                            return VoxValue.FromObject(field.fieldInfo.GetValue(field.reference));
+                            var val = field.fieldInfo.GetValue(field.reference);
+                            return VoxValue.FromObject(val);
                         }
+                    }
+                    else if (result.exitedAt0)
+                    {
+                        return obj;
                     }
                     else
                     {
-                        return obj[path.Last()];
+                        var voxValue = obj.GetValue(path.Last());
+                        return voxValue;
                     }
                 }
             }

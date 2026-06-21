@@ -53,7 +53,10 @@ public class Program
                 "Second item",
                 obj.num
             ]
-            print(testObj[2])
+            print(obj)
+            obj.num = 10
+            print(testObj[3])
+            print(obj.num)
             """;
         const string functionTest =
             """
@@ -79,13 +82,23 @@ public class Program
             a%=10
             print(a)
             """;
+        const string externalObjectTest =
+            """
+            var vec = newVec(3.14, 159)
+            
+            vecTest.Vector = vec;
+            print(vecTest.Vector)
+            """;
         
-        var scriptHandler = new VoxScriptHandler(arithTest);
+        var scriptHandler = new VoxScriptHandler(externalObjectTest);
 
         scriptHandler.AddContext(new Context());
 
         var externals = new TestExternals();
+
+        var vecTest = new VectorContainer();
         
+        scriptHandler.SetGlobal("vecTest", vecTest);
         scriptHandler.SetGlobal("obj", externals);
         scriptHandler.SetGlobal("abst", new AbstractTest2());
         
@@ -111,9 +124,31 @@ public class AbstractTest2 : AbstractTest1
     public string b = " World!";
 }
 
+public class VectorContainer
+{
+    [ExposeAs] public Vector? Vector = null;
+}
+
+public class Vector(double x, double y)
+{
+    [ExposeAs] public double X = x;
+    [ExposeAs] public double Y = y;
+
+    public override string ToString()
+    {
+        return $"({X}, {Y})";
+    }
+}
+
 [ExposeToScript(ContextType.Individual)]
 public class Context
 {
+    [ExposeAs]
+    public Vector newVec(double x, double y)
+    {
+        return new Vector(x, y);
+    }
+    
     [ExposeAs("print")]
     public VoxValue Print(params VoxValue[] input)
     {
