@@ -21,7 +21,7 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
     public readonly ContextType ContextType = contextType;
     public readonly string? Name = name;
 
-    public static ContextFunction ToFunction(MethodInfo methodInfo, object context)
+    public static ContextFunction ToFunction(MethodInfo methodInfo, object? context)
     {
         return new ContextFunction(args =>
                     {
@@ -81,6 +81,23 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
     public static ScriptObject ToVoxObject(object obj)
     {
         return new VoxExternalObject(obj);
+    }
+
+    public static ScriptObject ExposeStaticMethods(Type type)
+    {
+        VoxObject obj = new();
+        foreach (MethodInfo methodInfo in type.GetMethods(BindingFlags.Static))
+        {
+            ExposeAsAttribute? exposeAs = methodInfo.GetCustomAttribute(typeof(ExposeAsAttribute)) as ExposeAsAttribute;
+            if (exposeAs != null)
+            {
+                string name = exposeAs.Name ?? methodInfo.Name;
+                
+                obj.SetValue(name, ToFunction(methodInfo, null));
+            }
+        }
+
+        return obj;
     }
 }
 

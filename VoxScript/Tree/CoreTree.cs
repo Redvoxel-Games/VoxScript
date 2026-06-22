@@ -246,9 +246,7 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         List<IdentifierExpression> paramList = [];
         foreach (var param in parameters)
         {
-            var ids = param.identifier();
-            var name = ids[0];
-            var type = ids[1];
+            var name = param.identifier(0);
             
             paramList.Add((IdentifierExpression)Visit(name));
         }
