@@ -69,6 +69,8 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
                                 else if (type == typeof(int)) invokeArgs[i] = (int)(double)args[i];
                                 else if (type == typeof(long)) invokeArgs[i] = (long)(double)args[i];
                                 else if (type == typeof(string)) invokeArgs[i] = args[i].ToString();
+                                else if (type == typeof(VoxValue)) invokeArgs[i] = args[i];
+                                else throw new InvalidCastException("Cannot convert value to parameter type of " + type.Name);
                             } 
                                 
                             result = methodInfo.Invoke(context, invokeArgs);

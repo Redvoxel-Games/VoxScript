@@ -95,7 +95,7 @@ public class Program
             """;
         const string engineTest =
             """
-            vecTest.CreateVec()
+            vecTest.TestTransfer(3.14159)
             """;
         
         var scriptHandler = new VoxScriptHandler(engineTest);
@@ -138,6 +138,12 @@ public class AbstractTest2 : AbstractTest1
 public class VectorContainer
 {
     [ExposeAs] public Vector? Vector = null;
+
+    [ExposeAs]
+    public void TestTransfer(VoxValue a)
+    {
+        Console.WriteLine("|" + a.ToString());
+    }
 
     [ExposeAs]
     public Vector CreateVec()
