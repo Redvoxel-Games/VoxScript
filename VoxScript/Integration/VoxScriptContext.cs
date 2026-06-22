@@ -21,8 +21,15 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
     public readonly ContextType ContextType = contextType;
     public readonly string? Name = name;
 
-    public static ContextFunction ToFunction(MethodInfo methodInfo, object? context)
+    public static ContextFunction? ToFunction(MethodInfo methodInfo, object? context)
     {
+        // Detect if method uses any ref structs and return null if so
+        foreach (ParameterInfo parameter in methodInfo.GetParameters())
+        {
+            if (parameter.ParameterType.IsByRefLike) return null;
+        }
+        
+        // Return
         return new ContextFunction(args =>
                     {
                         var parameters = methodInfo.GetParameters();
@@ -62,15 +69,13 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
 
                             for (int i = 0; i < parameters.Length; i++)
                             {
+                                var parameter = parameters[i];
                                 // Convert arg to parameter type if possible
-                                var type = parameters[i].ParameterType;
-                                if (type == typeof(double)) invokeArgs[i] = (double)args[i];
-                                else if (type == typeof(float)) invokeArgs[i] = (float)(double)args[i];
-                                else if (type == typeof(int)) invokeArgs[i] = (int)(double)args[i];
-                                else if (type == typeof(long)) invokeArgs[i] = (long)(double)args[i];
-                                else if (type == typeof(string)) invokeArgs[i] = args[i].ToString();
-                                else if (type == typeof(VoxValue)) invokeArgs[i] = args[i];
-                                else throw new InvalidCastException("Cannot convert value to parameter type of " + type.Name);
+                                var type = parameter.ParameterType;
+                                if (TryConvert(args[i], type, out var value))
+                                {
+                                    invokeArgs[i] = value;
+                                } else throw new InvalidCastException("Cannot convert value to parameter type of " + type.Name);
                             } 
                                 
                             result = methodInfo.Invoke(context, invokeArgs);
@@ -78,6 +83,20 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
                         
                         return VoxValue.FromObject(result);
                     });
+    }
+
+    public static bool TryConvert(VoxValue value, Type type, out object? result)
+    {
+        result = null;
+        
+        if (type == typeof(double)) result = (double)value;
+        else if (type == typeof(float)) result = (float)(double)value;
+        else if (type == typeof(int)) result = (int)(double)value;
+        else if (type == typeof(long)) result = (long)(double)value;
+        else if (type == typeof(string)) result = value.ToString();
+        else if (type == typeof(VoxValue)) result = value;
+        
+        return result != null;
     }
 
     public static ScriptObject ToVoxObject(object obj)
@@ -88,18 +107,49 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
     public static ScriptObject ExposeStaticMethods(Type type)
     {
         VoxObject obj = new();
-        foreach (MethodInfo methodInfo in type.GetMethods(BindingFlags.Static))
-        {
-            ExposeAsAttribute? exposeAs = methodInfo.GetCustomAttribute(typeof(ExposeAsAttribute)) as ExposeAsAttribute;
-            if (exposeAs != null)
+        
+        var methods = type.GetMethods()
+            .Where(m => m.GetCustomAttribute<ExposeAsAttribute>() != null)
+            .GroupBy(m =>
             {
-                string name = exposeAs.Name ?? methodInfo.Name;
-                
-                obj.SetValue(name, ToFunction(methodInfo, null));
-            }
+                var attr = m.GetCustomAttribute<ExposeAsAttribute>();
+                return attr?.Name ?? m.Name;
+            });
+        
+        foreach (var group in methods)
+        {
+            var bestMethod = group
+                .OrderByDescending(GetMethodScore)
+                .First();
+
+            var func = ToFunction(bestMethod, obj);
+
+            if (func == null)
+                continue;
+
+            obj.SetValue(group.Key, func);
         }
 
         return obj;
+    }
+    
+    internal static int GetMethodScore(MethodInfo method)
+    {
+        int score = 0;
+
+        foreach (var p in method.GetParameters())
+        {
+            if (p.ParameterType == typeof(string))
+                score += 100;
+
+            if (p.ParameterType.IsByRefLike)
+                score -= 1000;
+
+            if (p.ParameterType.IsPointer)
+                score -= 1000;
+        }
+
+        return score;
     }
 }
 

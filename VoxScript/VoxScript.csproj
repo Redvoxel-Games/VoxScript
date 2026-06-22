@@ -14,9 +14,9 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/Redvoxel-Games/VoxScript</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>1.0.6</Version>
+    <Version>1.0.7</Version>
     <PackageReleaseNotes>
-      Fixed issue with how, funnily enough, VoxValues wouldn't be passed to C# methods unless the method used the convertable C# types as the parameters.
+      Methods with overloads now prefer overloads with strings and overloads with ReadOnlySpans are now rejected entirely.
     </PackageReleaseNotes>
     <PackageTags>Language</PackageTags>
   </PropertyGroup>

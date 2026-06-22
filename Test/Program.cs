@@ -97,8 +97,12 @@ public class Program
             """
             vecTest.TestTransfer(3.14159)
             """;
+        const string spanTest =
+            """
+            obj.SpanTest("Test!");
+            """;
         
-        var scriptHandler = new VoxScriptHandler(engineTest);
+        var scriptHandler = new VoxScriptHandler(spanTest);
 
         scriptHandler.AddContext(new Context());
 
@@ -121,6 +125,18 @@ public class TestExternals
 
     [ExposeAs("test")]
     public double Tst => number + 1;
+
+    [ExposeAs]
+    public void SpanTest(ReadOnlySpan<char> span)
+    {
+        Console.WriteLine(span);
+    }
+
+    [ExposeAs]
+    public void SpanTest(string span)
+    {
+        Console.WriteLine(span);
+    }
 }
 
 public abstract class AbstractTest1

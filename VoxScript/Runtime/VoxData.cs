@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Reflection;
 using VoxScript.Integration;
 
 namespace VoxScript.Runtime;
@@ -114,18 +115,27 @@ public class VoxExternalObject : ScriptObject
             }
         }
         
-        var methodInfos = objType.GetMethods();
-        foreach (var methodInfo in methodInfos)
-        {
-            if (methodInfo.GetCustomAttributes(typeof(ExposeAsAttribute), false).FirstOrDefault() is ExposeAsAttribute exposeAs)
+        var methods = objType.GetMethods()
+            .Where(m => m.GetCustomAttribute<ExposeAsAttribute>() != null)
+            .GroupBy(m =>
             {
-                string name = exposeAs.Name ?? methodInfo.Name;
-                    
-                VoxValue value = ExposeToScriptAttribute.ToFunction(methodInfo, obj);
-                
-                Keys.Add(name);
-                Values.Add(value);
-            }
+                var attr = m.GetCustomAttribute<ExposeAsAttribute>();
+                return attr?.Name ?? m.Name;
+            });
+        
+        foreach (var group in methods)
+        {
+            var bestMethod = group
+                .OrderByDescending(ExposeToScriptAttribute.GetMethodScore)
+                .First();
+
+            var func = ExposeToScriptAttribute.ToFunction(bestMethod, obj);
+
+            if (func == null)
+                continue;
+
+            Keys.Add(group.Key);
+            Values.Add((VoxValue)func);
         }
         
         var propertyInfos = objType.GetProperties();
