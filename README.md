@@ -1,6 +1,6 @@
 A basic scripting language made in C#.
 
-Created because there's no good C# binding for [Luau](https://luau.org/)
+Created for an in-development roblox-like game engine called Voxgen.
 
 Setup example:
 ```csharp
