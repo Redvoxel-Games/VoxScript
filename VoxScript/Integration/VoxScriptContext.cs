@@ -89,7 +89,7 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
 /// </summary>
 /// <param name="name">Optional name parameter, defaults to existing name.</param>
 /// <remarks>Fields only expose if the parent class <see cref="ContextType"/> is set to "Joined"</remarks>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Field)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Property)]
 public class ExposeAsAttribute(string? name = null, bool readOnly = false) : Attribute
 {
     public readonly string? Name = name;

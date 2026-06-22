@@ -16,6 +16,9 @@ scriptHandler.AddContext(new Context()); // A context object
 scriptHandler.Run();
 ```
 
+<p>Note that VoxScript does not come with any built-in functions for anything (Such as `print()`).</p>
+<p>You are expected to supply such functions yourself, an example can be found below.</p>
+
 Context example:
 ```csharp
 [ExposeToScript(ContextType.Individual)]
@@ -32,14 +35,13 @@ public class Context
         Console.WriteLine(": "+str);
         return VoxValue.Null;
     }
-
-    [ExposeAs("addNum")]
-    public double Add(double a, double b)
-    {
-        return a + b;
-    }
 }
 ```
-Methods that you expose to a script automatically convert to and from VoxValues.
+Methods that you expose to a script automatically convert to and from VoxValues. For example, if an exposed method takes in a double, VoxScript will convert given VoxValues to a double.
 
-Types are not currently implemented.
+Things that are not currently implemented because I did this in my free time and can't be bothered to try:
+<ul>
+<li>Threads/Coroutines
+<li>Types
+<li>Error detection/handling
+</ul>

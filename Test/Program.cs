@@ -89,8 +89,12 @@ public class Program
             vecTest.Vector = vec;
             print(vecTest.Vector)
             """;
+        const string propertyTest =
+            """
+            print(obj.test)
+            """;
         
-        var scriptHandler = new VoxScriptHandler(externalObjectTest);
+        var scriptHandler = new VoxScriptHandler(propertyTest);
 
         scriptHandler.AddContext(new Context());
 
@@ -110,6 +114,9 @@ public class TestExternals
 {
     [ExposeAs("num")]
     public double number = 3.14159;
+
+    [ExposeAs("test")]
+    public double Tst => number + 1;
 }
 
 public abstract class AbstractTest1

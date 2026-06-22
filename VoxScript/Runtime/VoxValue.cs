@@ -175,3 +175,11 @@ public record ExternalField(FieldInfo fieldInfo, object reference, bool readOnly
         return fieldInfo.Name;
     }
 }
+
+public record ExternalProperty(PropertyInfo propertyInfo, object reference)
+{
+    public override string ToString()
+    {
+        return propertyInfo.Name;
+    }
+}

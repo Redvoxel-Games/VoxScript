@@ -121,6 +121,20 @@ public class VoxExternalObject : ScriptObject
                 Values.Add(value);
             }
         }
+        
+        var propertyInfos = objType.GetProperties();
+        foreach (var propertyInfo in propertyInfos)
+        {
+            if (propertyInfo.GetCustomAttributes(typeof(ExposeAsAttribute), false).FirstOrDefault() is ExposeAsAttribute exposeAs)
+            {
+                string name = exposeAs.Name ?? propertyInfo.Name;
+                
+                VoxValue value = new VoxValue(VoxValueType.ExternalValue, default, new ExternalProperty(propertyInfo, obj));
+                
+                Keys.Add(name);
+                Values.Add(value);
+            }
+        }
     }
     
     public override VoxValue GetValue(VoxValue key)
@@ -129,8 +143,9 @@ public class VoxExternalObject : ScriptObject
         {
             if (Keys[i].Equals(key))
             {
-                var value = (Values[i].Reference as ExternalField)?.fieldInfo.GetValue(Reference);
-                return VoxValue.FromObject(value);
+                var vRef = Values[i].Reference;
+                if (vRef is ExternalField externalField) return VoxValue.FromObject(externalField.fieldInfo.GetValue(Reference));
+                if (vRef is ExternalProperty externalProperty) return VoxValue.FromObject(externalProperty.propertyInfo.GetValue(Reference));
             }
         }
 
@@ -142,26 +157,49 @@ public class VoxExternalObject : ScriptObject
         if (Keys.Contains(key))
         {
             var existing = Values[Keys.IndexOf(key)];
-            if (existing.Reference is not ExternalField field) throw new Exception();
-
-            if (!field.readOnly)
+            if (existing.Reference is ExternalField field)
             {
-                var fld = field.fieldInfo;
-                if (value.Type == VVT.String && fld.FieldType == typeof(string)) fld.SetValue(Reference, value.ToString());
-                else if (value.Type == VVT.Number && (
-                        fld.FieldType == typeof(double)
-                        || fld.FieldType == typeof(float)
-                        || fld.FieldType == typeof(int)
-                        )) fld.SetValue(Reference, value.Value.NumberValue);
-                else if (value.Type == VVT.Boolean && fld.FieldType == typeof(bool)) fld.SetValue(Reference, value.Value.BooleanValue);
-                else if (value.Type == VoxValueType.Object && value.Reference is VoxExternalObject externalObject)
+                if (!field.readOnly)
                 {
-                    fld.SetValue(Reference, externalObject.Reference);
-                }
-                
-            } else throw new AccessViolationException("Attempted to set readonly key");
+                    var fld = field.fieldInfo;
+                    if (value.Type == VVT.String && fld.FieldType == typeof(string))
+                        fld.SetValue(Reference, value.ToString());
+                    else if (value.Type == VVT.Number && (
+                                 fld.FieldType == typeof(double)
+                                 || fld.FieldType == typeof(float)
+                                 || fld.FieldType == typeof(int)
+                             )) fld.SetValue(Reference, value.Value.NumberValue);
+                    else if (value.Type == VVT.Boolean && fld.FieldType == typeof(bool))
+                        fld.SetValue(Reference, value.Value.BooleanValue);
+                    else if (value.Type == VoxValueType.Object && value.Reference is VoxExternalObject externalObject)
+                    {
+                        fld.SetValue(Reference, externalObject.Reference);
+                    }
+
+                } else throw new AccessViolationException("Attempted to set readonly key.");
+            }
+            else if (existing.Reference is ExternalProperty property)
+            {
+                if (property.propertyInfo.CanWrite)
+                {
+                    var prop = property.propertyInfo;
+                    if (value.Type == VVT.String && prop.PropertyType == typeof(string))
+                        prop.SetValue(Reference, value.ToString());
+                    else if (value.Type == VVT.Number && (
+                                 prop.PropertyType == typeof(double)
+                                 || prop.PropertyType == typeof(float)
+                                 || prop.PropertyType == typeof(int)
+                             )) prop.SetValue(Reference, value.Value.NumberValue);
+                    else if (value.Type == VVT.Boolean && prop.PropertyType == typeof(bool))
+                        prop.SetValue(Reference, value.Value.BooleanValue);
+                    else if (value.Type == VoxValueType.Object && value.Reference is VoxExternalObject externalObject)
+                    {
+                        prop.SetValue(Reference, externalObject.Reference);
+                    }
+                } else throw new AccessViolationException("Attempted to set readonly key.");
+            }
         }
-        else throw new AccessViolationException("Attempted to add key to external object");
+        else throw new AccessViolationException("Attempted to add key to external object.");
     }
 
     public override string ToString()

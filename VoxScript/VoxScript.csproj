@@ -14,8 +14,8 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/Redvoxel-Games/VoxScript</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>1.0.2</Version>
-    <PackageReleaseNotes>Implemented proper C# object handling</PackageReleaseNotes>
+    <Version>1.0.3</Version>
+    <PackageReleaseNotes>Added the ability for scripts to set and get properties</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

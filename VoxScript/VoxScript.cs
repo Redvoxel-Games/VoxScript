@@ -47,7 +47,6 @@ public class VoxScriptHandler
             name = expose.Name ?? name;
         }
         
-        var fieldInfos = contextObjectType.GetFields();
         var methodInfos = contextObjectType.GetMethods();
 
         if (contextType == ContextType.Individual)

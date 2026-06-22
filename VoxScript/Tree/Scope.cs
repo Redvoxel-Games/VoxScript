@@ -40,6 +40,8 @@ public class Scope(Scope? parent=null)
         {
             path.Add(ExpressionMath.EvaluateValue(expr, this));
         }
+
+        if (path[0].ToString() == "_") return;
         
         var first = path.FirstOrDefault().ToString();
         
@@ -63,8 +65,8 @@ public class Scope(Scope? parent=null)
                 {
                     if (obj.GetValue(path.Last()).Type == VoxValueType.ExternalValue)
                     {
-                        var fieldObj = obj.GetValue(path.Last()).Reference;
-                        if (fieldObj is ExternalField { readOnly: false } field)
+                        var extrObj = obj.GetValue(path.Last()).Reference;
+                        if (extrObj is ExternalField { readOnly: false } field)
                         {
                             object nativeValue = null!;
                             if (field.fieldInfo.FieldType == typeof(string)) nativeValue = value.ToString();
@@ -74,6 +76,18 @@ public class Scope(Scope? parent=null)
                             if (field.fieldInfo.FieldType == typeof(long)) nativeValue = value.Value.NumberValue;
                             if (field.fieldInfo.FieldType == typeof(bool)) nativeValue = value;
                             field.fieldInfo.SetValue(field.reference, nativeValue);
+                        }
+                        else if (extrObj is ExternalProperty prop)
+                        {
+                            if (!prop.propertyInfo.CanWrite) throw new AccessViolationException("Attempt to set readonly key.");
+                            object nativeValue = null!;
+                            if (prop.propertyInfo.PropertyType == typeof(string)) nativeValue = value.ToString();
+                            if (prop.propertyInfo.PropertyType == typeof(double)) nativeValue = value.Value.NumberValue;
+                            if (prop.propertyInfo.PropertyType == typeof(float)) nativeValue = value.Value.NumberValue;
+                            if (prop.propertyInfo.PropertyType == typeof(int)) nativeValue = value.Value.NumberValue;
+                            if (prop.propertyInfo.PropertyType == typeof(long)) nativeValue = value.Value.NumberValue;
+                            if (prop.propertyInfo.PropertyType == typeof(bool)) nativeValue = value;
+                            prop.propertyInfo.SetValue(prop.reference, nativeValue);
                         }
                     }
                     else
@@ -126,16 +140,23 @@ public class Scope(Scope? parent=null)
             path.Add(val);
         }
         
+        if (path[0].ToString() == "_") return VoxValue.Null;
+        
         var first = path.FirstOrDefault();
 
         if (_values.TryGetValue(first, out VoxValue value))
         {
             if (value.Type == VoxValueType.ExternalValue)
             {
-                var fieldObj = value.Reference;
-                if (fieldObj is ExternalField field)
+                var extrObj = value.Reference;
+                if (extrObj is ExternalField field)
                 {
                     return VoxValue.FromObject(field.fieldInfo.GetValue(field.reference));
+                }
+                if (extrObj is ExternalProperty prop)
+                {
+                    if (!prop.propertyInfo.CanRead) throw new AccessViolationException("Attempt to read non-readable value.");
+                    return VoxValue.FromObject(prop.propertyInfo.GetValue(prop.reference));
                 }
             }
 
@@ -149,10 +170,15 @@ public class Scope(Scope? parent=null)
                 {
                     if (obj.GetValue(path.Last()).Type == VoxValueType.ExternalValue)
                     {
-                        var fieldObj = obj.GetValue(path.Last()).Reference;
-                        if (fieldObj is ExternalField field)
+                        var extrObj = obj.GetValue(path.Last()).Reference;
+                        if (extrObj is ExternalField field)
                         {
                             var val = field.fieldInfo.GetValue(field.reference);
+                            return VoxValue.FromObject(val);
+                        }
+                        if (extrObj is ExternalProperty prop)
+                        {
+                            var val = prop.propertyInfo.GetValue(prop.reference);
                             return VoxValue.FromObject(val);
                         }
                     }
