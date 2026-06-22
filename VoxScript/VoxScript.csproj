@@ -14,8 +14,12 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/Redvoxel-Games/VoxScript</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>1.0.4</Version>
-    <PackageReleaseNotes>Fixed an error caused by function definitions and added ExposeToScriptAttribute.ExposeStaticMethods(Type)</PackageReleaseNotes>
+    <Version>1.0.5</Version>
+    <PackageReleaseNotes>
+      Fixed issue with external objects not giving function values for their methods despite having them stored.
+      Added ScriptObject.HasKey(VoxValue).
+      Added an error for when an attempt to call a non-function value (such as null) is made.
+    </PackageReleaseNotes>
     <PackageTags>Language</PackageTags>
   </PropertyGroup>
 
