@@ -60,11 +60,11 @@ public class Program
             """;
         const string functionTest =
             """
-            function testFunc() {
-                print("Hello, world!")
+            function testFunc(text) {
+                print(text)
                 return 3.14159
             }
-            print(testFunc())
+            print(testFunc("Hello, World!"))
             """;
         const string scriptTest =
             """
@@ -93,8 +93,12 @@ public class Program
             """
             print(obj.test)
             """;
+        const string engineTest =
+            """
+            vecTest.CreateVec()
+            """;
         
-        var scriptHandler = new VoxScriptHandler(propertyTest);
+        var scriptHandler = new VoxScriptHandler(engineTest);
 
         scriptHandler.AddContext(new Context());
 
@@ -134,6 +138,13 @@ public class AbstractTest2 : AbstractTest1
 public class VectorContainer
 {
     [ExposeAs] public Vector? Vector = null;
+
+    [ExposeAs]
+    public Vector CreateVec()
+    {
+        Console.WriteLine("Test");
+        return new Vector(1,2);
+    }
 }
 
 public class Vector(double x, double y)

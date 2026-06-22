@@ -168,7 +168,7 @@ public class Scope(Scope? parent=null)
                 var obj = (ScriptObject?)objectToGetIn.Reference;
                 if (obj != null)
                 {
-                    if (obj.GetValue(path.Last()).Type == VoxValueType.ExternalValue)
+                    if (obj.HasKey(path.Last()) && obj.GetValue(path.Last()).Type == VoxValueType.ExternalValue)
                     {
                         var extrObj = obj.GetValue(path.Last()).Reference;
                         if (extrObj is ExternalField field)
@@ -188,8 +188,7 @@ public class Scope(Scope? parent=null)
                     }
                     else
                     {
-                        var voxValue = obj.GetValue(path.Last());
-                        return voxValue;
+                        return obj.HasKey(path.Last()) ? obj.GetValue(path.Last()) : VoxValue.Null;
                     }
                 }
             }

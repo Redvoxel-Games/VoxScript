@@ -7,6 +7,7 @@ public abstract class ScriptObject
 {
     public abstract VoxValue GetValue(VoxValue key);
     public abstract void SetValue(VoxValue key, VoxValue value);
+    public abstract bool HasKey(VoxValue key);
 }
 
 [ExposeToScript(ContextType.Joined)]
@@ -45,8 +46,13 @@ public class VoxObject : ScriptObject, IEnumerable<KeyValuePair<VoxValue, VoxVal
             }
         }
     }
-    
-    
+
+    public override bool HasKey(VoxValue key)
+    {
+        return Keys.Contains(key);
+    }
+
+
     public IEnumerator<KeyValuePair<VoxValue, VoxValue>> GetEnumerator()
     {
         for (int i = 0; i < Keys.Count; i++)
@@ -146,6 +152,7 @@ public class VoxExternalObject : ScriptObject
                 var vRef = Values[i].Reference;
                 if (vRef is ExternalField externalField) return VoxValue.FromObject(externalField.fieldInfo.GetValue(Reference));
                 if (vRef is ExternalProperty externalProperty) return VoxValue.FromObject(externalProperty.propertyInfo.GetValue(Reference));
+                if (vRef is VoxFunctionBase func) return func;
             }
         }
 
@@ -200,6 +207,11 @@ public class VoxExternalObject : ScriptObject
             }
         }
         else throw new AccessViolationException("Attempted to add key to external object.");
+    }
+
+    public override bool HasKey(VoxValue key)
+    {
+        return Keys.Contains(key);
     }
 
     public override string ToString()

@@ -153,7 +153,7 @@ public static class ExpressionMath
             {
                 return function.Body.Execute(scope);
             }
-            else if (call.Target is IdentifierExpression id)
+            if (call.Target is IdentifierExpression id)
             {
                 var val = scope.GetValue(id);
                 if (val.Type == VoxValueType.Function)
@@ -171,7 +171,7 @@ public static class ExpressionMath
                     var returned = func.Invoke(inputs);
                     
                     return returned;
-                }
+                } else throw new InvalidOperationException($"Attempted to call value of type {val.Type} as a function.");
             }
         }
         

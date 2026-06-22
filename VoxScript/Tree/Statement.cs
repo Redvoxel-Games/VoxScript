@@ -22,7 +22,8 @@ public class VariableDeclaration(
     
     public override VoxValue Execute(Scope scope)
     {
-        scope.SetValue(new IdentifierExpression([new LiteralExpression(Name)]), ExpressionMath.EvaluateValue(Initializer, scope), true);
+        var value = ExpressionMath.EvaluateValue(Initializer, scope);
+        scope.SetValue(new IdentifierExpression([new LiteralExpression(Name)]), value, true);
         return VoxValue.Null;
     }
 }
