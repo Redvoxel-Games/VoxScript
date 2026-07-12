@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 using System.Reflection;
 using VoxScript.Integration;
 
@@ -90,32 +91,50 @@ public class VoxObject : ScriptObject, IEnumerable<KeyValuePair<VoxValue, VoxVal
 
 public class VoxExternalObject : ScriptObject
 {
-    public readonly object Reference;
+    public object? Reference;
+    public Type RefType;
 
     private readonly List<string> Keys = [];
     private readonly List<VoxValue> Values = [];
 
-    public VoxExternalObject(object obj)
+    public object ConvertBack()
     {
-        Reference = obj;
+        if (Reference == null) throw new NullReferenceException("Attempt to convert object without reference");
+
+        return Reference;
+    }
+
+    public static VoxExternalObject ExposeType(Type type, object? instance)
+    {
+        var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic;
+        if (instance == null)
+        {
+            bindingFlags |= BindingFlags.Static;
+        }
+        else
+        {
+            bindingFlags |= BindingFlags.Instance;
+        }
         
-        var objType = obj.GetType();
+        VoxExternalObject voxObj = new VoxExternalObject();
+        voxObj.Reference = instance;
+        voxObj.RefType = type;
         
-        var fieldInfos = objType.GetFields();
+        var fieldInfos = type.GetFields(bindingFlags);
         foreach (var fieldInfo in fieldInfos)
         {
             if (fieldInfo.GetCustomAttributes(typeof(ExposeAsAttribute), false).FirstOrDefault() is ExposeAsAttribute exposeAs)
             {
                 string name = exposeAs.Name ?? fieldInfo.Name;
-                    
-                VoxValue value = new VoxValue(VoxValueType.ExternalValue, default, new ExternalField(fieldInfo, obj));
+
+                VoxValue value = new VoxValue(VoxValueType.ExternalValue, default, new ExternalField(fieldInfo, instance));
                 
-                Keys.Add(name);
-                Values.Add(value);
+                voxObj.Keys.Add(name);
+                voxObj.Values.Add(value);
             }
         }
         
-        var methods = objType.GetMethods()
+        var methods = type.GetMethods(bindingFlags)
             .Where(m => m.GetCustomAttribute<ExposeAsAttribute>() != null)
             .GroupBy(m =>
             {
@@ -129,28 +148,30 @@ public class VoxExternalObject : ScriptObject
                 .OrderByDescending(ExposeToScriptAttribute.GetMethodScore)
                 .First();
 
-            var func = ExposeToScriptAttribute.ToFunction(bestMethod, obj);
+            var func = ExposeToScriptAttribute.ToFunction(bestMethod, instance);
 
             if (func == null)
                 continue;
 
-            Keys.Add(group.Key);
-            Values.Add((VoxValue)func);
+            voxObj.Keys.Add(group.Key);
+            voxObj.Values.Add((VoxValue)func);
         }
         
-        var propertyInfos = objType.GetProperties();
+        var propertyInfos = type.GetProperties(bindingFlags);
         foreach (var propertyInfo in propertyInfos)
         {
             if (propertyInfo.GetCustomAttributes(typeof(ExposeAsAttribute), false).FirstOrDefault() is ExposeAsAttribute exposeAs)
             {
                 string name = exposeAs.Name ?? propertyInfo.Name;
                 
-                VoxValue value = new VoxValue(VoxValueType.ExternalValue, default, new ExternalProperty(propertyInfo, obj));
+                VoxValue value = new VoxValue(VoxValueType.ExternalValue, default, new ExternalProperty(propertyInfo, instance));
                 
-                Keys.Add(name);
-                Values.Add(value);
+                voxObj.Keys.Add(name);
+                voxObj.Values.Add(value);
             }
         }
+
+        return voxObj;
     }
     
     public override VoxValue GetValue(VoxValue key)
@@ -171,6 +192,7 @@ public class VoxExternalObject : ScriptObject
 
     public override void SetValue(VoxValue key, VoxValue value)
     {
+        var objType = Reference.GetType();
         if (Keys.Contains(key))
         {
             var existing = Values[Keys.IndexOf(key)];
@@ -185,7 +207,10 @@ public class VoxExternalObject : ScriptObject
                                  fld.FieldType == typeof(double)
                                  || fld.FieldType == typeof(float)
                                  || fld.FieldType == typeof(int)
-                             )) fld.SetValue(Reference, value.Value.NumberValue);
+                             ))
+                    {
+                        fld.SetValue(Reference, Convert.ChangeType(value.Value.NumberValue, fld.FieldType));
+                    }
                     else if (value.Type == VVT.Boolean && fld.FieldType == typeof(bool))
                         fld.SetValue(Reference, value.Value.BooleanValue);
                     else if (value.Type == VoxValueType.Object && value.Reference is VoxExternalObject externalObject)
@@ -226,10 +251,34 @@ public class VoxExternalObject : ScriptObject
 
     public override string ToString()
     {
+        if (Reference == null)
+        {
+            return "static:" + RefType.Name;
+        }
         if (Reference.ToString() != Reference.GetType().ToString())
         {
             return Reference.ToString() ?? Reference.GetType().Name;
         }
         return Reference.GetType().Name;
+    }
+}
+
+public class VoxTypeInstance : ScriptObject
+{
+    public readonly VoxType Prototype;
+    
+    public override VoxValue GetValue(VoxValue key)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void SetValue(VoxValue key, VoxValue value)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool HasKey(VoxValue key)
+    {
+        throw new NotImplementedException();
     }
 }

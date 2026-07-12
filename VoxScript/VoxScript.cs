@@ -34,6 +34,11 @@ public class VoxScriptHandler
         ScriptRoot.GlobalScope.SetValue(name, pValue);
     }
 
+    public VoxValue GetGlobal(string name)
+    {
+        return ScriptRoot.GlobalScope.GetValue(name);
+    }
+
     public void AddContext(object context)
     {
         var contextObjectType = context.GetType();

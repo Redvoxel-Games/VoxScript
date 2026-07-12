@@ -240,6 +240,78 @@ public partial class VoxScriptBaseListener : IVoxScriptListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitVar_inst([NotNull] VoxScriptParser.Var_instContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_define"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterType_define([NotNull] VoxScriptParser.Type_defineContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_define"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitType_define([NotNull] VoxScriptParser.Type_defineContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_inherit"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterType_inherit([NotNull] VoxScriptParser.Type_inheritContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_inherit"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitType_inherit([NotNull] VoxScriptParser.Type_inheritContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_member"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterType_member([NotNull] VoxScriptParser.Type_memberContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_member"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitType_member([NotNull] VoxScriptParser.Type_memberContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_field"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterType_field([NotNull] VoxScriptParser.Type_fieldContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_field"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitType_field([NotNull] VoxScriptParser.Type_fieldContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_function"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterType_function([NotNull] VoxScriptParser.Type_functionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_function"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitType_function([NotNull] VoxScriptParser.Type_functionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_reference"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterType_reference([NotNull] VoxScriptParser.Type_referenceContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_reference"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitType_reference([NotNull] VoxScriptParser.Type_referenceContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="VoxScriptParser.for_object"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

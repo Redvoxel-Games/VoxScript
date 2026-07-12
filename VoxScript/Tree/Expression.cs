@@ -33,6 +33,11 @@ public class LiteralExpression(VoxValue value) : Expression
         return false;
     }
 
+    public override string ToString()
+    {
+        return Value.ToString();
+    }
+
     public string GetStringValue()
     {
         return Value.ToString();
@@ -78,9 +83,14 @@ public class CallExpression(
     public List<Expression> Arguments { get; } = arguments;
 }
 
-public class IdentifierExpression(List<Expression> path) : Expression
+public class IdentifierExpression : Expression
 {
-    public List<Expression> Path { get; } = path;
+    public List<Expression> Path { get; }
+
+    public IdentifierExpression(List<Expression> path)
+    {
+        Path = path;
+    }
 
     public bool Equals(IdentifierExpression other)
     {
@@ -97,7 +107,7 @@ public class IdentifierExpression(List<Expression> path) : Expression
         var str = "";
         foreach (var m in Path)
         {
-            str += m + ", ";
+            str += m.ToString() + ".";
         }
         return str;
     }

@@ -201,6 +201,66 @@ public interface IVoxScriptListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitVar_inst([NotNull] VoxScriptParser.Var_instContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_define"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterType_define([NotNull] VoxScriptParser.Type_defineContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_define"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitType_define([NotNull] VoxScriptParser.Type_defineContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_inherit"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterType_inherit([NotNull] VoxScriptParser.Type_inheritContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_inherit"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitType_inherit([NotNull] VoxScriptParser.Type_inheritContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_member"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterType_member([NotNull] VoxScriptParser.Type_memberContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_member"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitType_member([NotNull] VoxScriptParser.Type_memberContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_field"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterType_field([NotNull] VoxScriptParser.Type_fieldContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_field"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitType_field([NotNull] VoxScriptParser.Type_fieldContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_function"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterType_function([NotNull] VoxScriptParser.Type_functionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_function"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitType_function([NotNull] VoxScriptParser.Type_functionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.type_reference"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterType_reference([NotNull] VoxScriptParser.Type_referenceContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.type_reference"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitType_reference([NotNull] VoxScriptParser.Type_referenceContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="VoxScriptParser.for_object"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

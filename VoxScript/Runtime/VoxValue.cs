@@ -19,6 +19,7 @@ public enum VoxValueType
     Break, // Breaks highest loop, Carries no value
     Continue, // Skips highest loop, Carries no value
     End, // Cancels current scope execution, Carries no value.
+    Type,
 }
 
 [StructLayout(LayoutKind.Auto)]
@@ -168,16 +169,18 @@ public readonly struct VoxValue : IEquatable<VoxValue>
     }
 }
 
-public record ExternalField(FieldInfo fieldInfo, object reference, bool readOnly = false)
+public record ExternalField(FieldInfo fieldInfo, object? reference, bool readOnly = false)
 {
+    public Type FieldType => fieldInfo.FieldType;
     public override string ToString()
     {
         return fieldInfo.Name;
     }
 }
 
-public record ExternalProperty(PropertyInfo propertyInfo, object reference)
+public record ExternalProperty(PropertyInfo propertyInfo, object? reference)
 {
+    public Type PropertyType => propertyInfo.PropertyType;
     public override string ToString()
     {
         return propertyInfo.Name;

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Linq.Expressions;
+using System.Reflection;
 using VoxScript.Runtime;
 
 namespace VoxScript.Tree;
@@ -210,17 +211,56 @@ public static class ExpressionMath
             var operation = binary.Operator;
             var left = EvaluateExpression(binary.Left, scope) ?? throw new InvalidOperationException();
             var right = EvaluateExpression(binary.Right, scope) ?? throw new InvalidOperationException();
+            
+            if (left is VoxValue { Type: VVT.Null } || right is VoxValue { Type: VVT.Null })
+            {
+                if (left is not VoxValue { Type: VVT.String })
+                {
+                    throw new ArithmeticException("Attempt to do math operation on null type");
+                }
+            }
 
             switch (operation)
             {
                 // Math/String operations
                 case "+":
                 {
+                    if (left is VoxValue { Type: VVT.Object, Reference: VoxExternalObject } leftObj)
+                    {
+                        VoxExternalObject lo = (VoxExternalObject)leftObj.Reference;
+                        
+                        VoxValue rightVal = (VoxValue) right;
+                        
+                        if (rightVal is { Type: VVT.Object, Reference: VoxExternalObject })
+                        {
+                            VoxExternalObject ro = (VoxExternalObject)rightVal.Reference;
+                            var foundOp = lo.RefType.GetMethod("op_Addition",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, ro.RefType]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), ro.ConvertBack()]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                        else if (rightVal is { Type: VVT.Number })
+                        {
+                            var foundOp = lo.RefType.GetMethod("op_Addition",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, typeof(double)]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), rightVal.Value.NumberValue]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                        else if (rightVal is { Type: VVT.String })
+                        {
+                            var foundOp = lo.RefType.GetMethod("op_Addition",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, typeof(string)]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), rightVal.Value.StringValue]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                    }
                     if (left is VoxValue {Type: VoxValueType.Number} v1 && right is VoxValue {Type: VoxValueType.Number} v2)
                     {
                         return v1.Value.NumberValue + v2.Value.NumberValue;
                     }
-
                     if (left is VoxValue val1 && right is VoxValue val2)
                     {
                         return val1 + val2;
@@ -242,6 +282,38 @@ public static class ExpressionMath
                 }
                 case "-":
                 {
+                    if (left is VoxValue { Type: VVT.Object, Reference: VoxExternalObject } leftObj)
+                    {
+                        VoxExternalObject lo = (VoxExternalObject)leftObj.Reference;
+                        
+                        VoxValue rightVal = (VoxValue) right;
+                        
+                        if (rightVal is { Type: VVT.Object, Reference: VoxExternalObject })
+                        {
+                            VoxExternalObject ro = (VoxExternalObject)rightVal.Reference;
+                            var foundOp = lo.RefType.GetMethod("op_Subtraction",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, ro.RefType]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), ro.ConvertBack()]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                        else if (rightVal is { Type: VVT.Number })
+                        {
+                            var foundOp = lo.RefType.GetMethod("op_Subtraction",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, typeof(double)]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), rightVal.Value.NumberValue]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                        else if (rightVal is { Type: VVT.String })
+                        {
+                            var foundOp = lo.RefType.GetMethod("op_Subtraction",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, typeof(string)]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), rightVal.Value.StringValue]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                    }
                     if (left is VoxValue {Type: VoxValueType.Number} v1 && right is VoxValue {Type: VoxValueType.Number} v2)
                     {
                         return v1.Value.NumberValue - v2.Value.NumberValue;
@@ -250,14 +322,95 @@ public static class ExpressionMath
                 }
                 case "*":
                 {
+                    if (left is VoxValue { Type: VVT.Object, Reference: VoxExternalObject } leftObj)
+                    {
+                        VoxExternalObject lo = (VoxExternalObject)leftObj.Reference;
+                        
+                        VoxValue rightVal = (VoxValue) right;
+                        
+                        if (rightVal is { Type: VVT.Object, Reference: VoxExternalObject })
+                        {
+                            VoxExternalObject ro = (VoxExternalObject)rightVal.Reference;
+                            var foundOp = lo.RefType.GetMethod("op_Multiply",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, ro.RefType]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), ro.ConvertBack()]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                        else if (rightVal is { Type: VVT.Number })
+                        {
+                            var foundOp = lo.RefType.GetMethod("op_Multiply",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, typeof(double)]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), rightVal.Value.NumberValue]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                        else if (rightVal is { Type: VVT.String })
+                        {
+                            var foundOp = lo.RefType.GetMethod("op_Multiply",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, typeof(string)]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), rightVal.Value.StringValue]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                    }
                     if (left is string str)
                     {
                         return string.Concat(Enumerable.Repeat(str, (int)Math.Floor((double)right)));
                     }
+                    if (left is VoxValue {Type: VoxValueType.Number} v1 && right is VoxValue {Type: VoxValueType.Number} v2)
+                    {
+                        return v1.Value.NumberValue * v2.Value.NumberValue;
+                    }
                     return (double)left * (double)right;
                 }
-                case "/": return (double)left / (double)right;
-                case "^": return Math.Pow((double)left, (double)right);
+                case "/":
+                {
+                    if (left is VoxValue { Type: VVT.Object, Reference: VoxExternalObject } leftObj)
+                    {
+                        VoxExternalObject lo = (VoxExternalObject)leftObj.Reference;
+                        
+                        VoxValue rightVal = (VoxValue) right;
+                        
+                        if (rightVal is { Type: VVT.Object, Reference: VoxExternalObject })
+                        {
+                            VoxExternalObject ro = (VoxExternalObject)rightVal.Reference;
+                            var foundOp = lo.RefType.GetMethod("op_Division",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, ro.RefType]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), ro.ConvertBack()]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                        else if (rightVal is { Type: VVT.Number })
+                        {
+                            var foundOp = lo.RefType.GetMethod("op_Division",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, typeof(double)]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), rightVal.Value.NumberValue]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                        else if (rightVal is { Type: VVT.String })
+                        {
+                            var foundOp = lo.RefType.GetMethod("op_Division",
+                                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                                [lo.RefType, typeof(string)]);
+                            
+                            return foundOp?.Invoke(null, [lo.ConvertBack(), rightVal.Value.StringValue]) ?? throw new InvalidOperationException("Failed to multiply native types");
+                        }
+                    }
+                    if (left is VoxValue {Type: VoxValueType.Number} v1 && right is VoxValue {Type: VoxValueType.Number} v2)
+                    {
+                        return v1.Value.NumberValue / v2.Value.NumberValue;
+                    }
+                    return (double)left / (double)right;
+                }
+                case "^":
+                {if (left is VoxValue {Type: VoxValueType.Number} v1 && right is VoxValue {Type: VoxValueType.Number} v2)
+                    {
+                        return Math.Pow(v1.Value.NumberValue, v2.Value.NumberValue);
+                    }
+                    return Math.Pow((double)left, (double)right);
+                }
                 
                 // Bool operations
                 case "==": return left.Equals(right);
@@ -307,6 +460,10 @@ public static class ExpressionMath
                     }
                     
                     return func.Invoke(inputs);
+                }
+                else
+                {
+                    throw new Exception($"Attempt to call type {val.Type} as function");
                 }
             }
         }

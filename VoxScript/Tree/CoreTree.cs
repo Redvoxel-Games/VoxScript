@@ -1,4 +1,5 @@
 ﻿using Antlr4.Runtime;
+using VoxScript.Integration;
 using VoxScript.Runtime;
 using static VoxScriptParser;
 
@@ -43,7 +44,9 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         List<Statement> statements = [];
         foreach (var action in context.action())
         {
-            statements.Add((Statement)Visit(action));
+            var statement = (Statement)Visit(action);
+            statement.LineNumber = action.Start.Line;
+            statements.Add(statement);
         }
         var set = new StatementSet(statements);
 
@@ -104,9 +107,9 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
     public override AstNode VisitVar_define(Var_defineContext context)
     {
         var inst = context.var_inst();
-        var nameIdent = inst.identifier(0);
+        var nameIdent = inst.identifier();
         var name = nameIdent.ID()?.GetText();
-        var type = inst.identifier(1) != null ? (IdentifierExpression)Visit(inst.identifier(1)) : null;
+        var type = inst.type_reference() != null ? (IdentifierExpression)Visit(inst.type_reference()) : null;
 
         if (name == null || nameIdent.iden_seg().Length > 0)
         {
@@ -147,7 +150,11 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
             return new LiteralExpression(
                 context.BOOLEAN().GetText() == "true");
         }
-
+        if (context.NULL() != null)
+        {
+            return new LiteralExpression(VoxValue.Null);
+        }
+        
         if (context.func_call() != null)
         {
             List<Expression> arguments = [];
@@ -246,7 +253,7 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         List<IdentifierExpression> paramList = [];
         foreach (var param in parameters)
         {
-            var name = param.identifier(0);
+            var name = param.identifier();
             
             paramList.Add((IdentifierExpression)Visit(name));
         }
@@ -373,7 +380,7 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         List<IdentifierExpression> parameters = [];
         foreach (var iden in context.var_inst())
         {
-            parameters.Add((IdentifierExpression)Visit(iden.identifier(0)));
+            parameters.Add((IdentifierExpression)Visit(iden.identifier()));
         }
         
         return new FunctionExpression(parameters, (StatementSet)Visit(context.actionSet()));

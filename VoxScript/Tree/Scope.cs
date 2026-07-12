@@ -1,4 +1,6 @@
-﻿using VoxScript.Runtime;
+﻿using System.Diagnostics;
+using VoxScript.Integration;
+using VoxScript.Runtime;
 
 namespace VoxScript.Tree;
 
@@ -38,7 +40,8 @@ public class Scope(Scope? parent=null)
         List<VoxValue> path = [];
         foreach (var expr in rawPath)
         {
-            path.Add(ExpressionMath.EvaluateValue(expr, this));
+            var val = ExpressionMath.EvaluateValue(expr, this);
+            path.Add(val);
         }
 
         if (path[0].ToString() == "_") return;
@@ -71,10 +74,11 @@ public class Scope(Scope? parent=null)
                             object nativeValue = null!;
                             if (field.fieldInfo.FieldType == typeof(string)) nativeValue = value.ToString();
                             if (field.fieldInfo.FieldType == typeof(double)) nativeValue = value.Value.NumberValue;
-                            if (field.fieldInfo.FieldType == typeof(float)) nativeValue = value.Value.NumberValue;
-                            if (field.fieldInfo.FieldType == typeof(int)) nativeValue = value.Value.NumberValue;
-                            if (field.fieldInfo.FieldType == typeof(long)) nativeValue = value.Value.NumberValue;
+                            if (field.fieldInfo.FieldType == typeof(float)) nativeValue = (float)value.Value.NumberValue;
+                            if (field.fieldInfo.FieldType == typeof(int)) nativeValue = (int)value.Value.NumberValue;
+                            if (field.fieldInfo.FieldType == typeof(long)) nativeValue = (long)value.Value.NumberValue;
                             if (field.fieldInfo.FieldType == typeof(bool)) nativeValue = value;
+
                             field.fieldInfo.SetValue(field.reference, nativeValue);
                         }
                         else if (extrObj is ExternalProperty prop)
@@ -83,10 +87,11 @@ public class Scope(Scope? parent=null)
                             object nativeValue = null!;
                             if (prop.propertyInfo.PropertyType == typeof(string)) nativeValue = value.ToString();
                             if (prop.propertyInfo.PropertyType == typeof(double)) nativeValue = value.Value.NumberValue;
-                            if (prop.propertyInfo.PropertyType == typeof(float)) nativeValue = value.Value.NumberValue;
-                            if (prop.propertyInfo.PropertyType == typeof(int)) nativeValue = value.Value.NumberValue;
-                            if (prop.propertyInfo.PropertyType == typeof(long)) nativeValue = value.Value.NumberValue;
+                            if (prop.propertyInfo.PropertyType == typeof(float)) nativeValue = (float)value.Value.NumberValue;
+                            if (prop.propertyInfo.PropertyType == typeof(int)) nativeValue = (int)value.Value.NumberValue;
+                            if (prop.propertyInfo.PropertyType == typeof(long)) nativeValue = (long)value.Value.NumberValue;
                             if (prop.propertyInfo.PropertyType == typeof(bool)) nativeValue = value;
+                            
                             prop.propertyInfo.SetValue(prop.reference, nativeValue);
                         }
                     }
@@ -114,14 +119,46 @@ public class Scope(Scope? parent=null)
             }
 
             var newFirst = withoutFirst[0];
+            
+            if (root.Type is not (VVT.Object or VVT.ExternalValue)) return new TreeResult(VoxValue.Null, false);
+            if (root.Type == VoxValueType.ExternalValue)
+            {
+                if (root.Reference is ExternalField externalField)
+                {
+                    var fieldType = externalField.fieldInfo.FieldType;
+                    
+                    if (fieldType == typeof(string) || fieldType.IsPrimitive) continue;
+                    
+                    var obj = ExposeToScriptAttribute.ToVoxObject(externalField.fieldInfo.GetValue(externalField.reference));
+                    if (obj == null) return new TreeResult(VoxValue.Null, false);
 
-            if (root.Type != VoxValueType.Object) return new TreeResult(VoxValue.Null, false);
-            var obj = (ScriptObject?)root.Reference;
-            if (obj == null) return new TreeResult(VoxValue.Null, false);
+                    VoxValue newValue = obj.GetValue(newFirst);
+                    root = newValue;
+                    accessor = withoutFirst;
+                }
+                else if (root.Reference is ExternalProperty externalProperty)
+                {
+                    var propertyType = externalProperty.propertyInfo.PropertyType;
+                    
+                    if (propertyType == typeof(string) || propertyType.IsPrimitive) continue;
+                    
+                    var obj = ExposeToScriptAttribute.ToVoxObject(externalProperty.propertyInfo.GetValue(externalProperty.reference));
+                    if (obj == null) return new TreeResult(VoxValue.Null, false);
 
-            VoxValue newValue = obj.GetValue(newFirst);
-            root = newValue;
-            accessor = withoutFirst;
+                    VoxValue newValue = obj.GetValue(newFirst);
+                    root = newValue;
+                    accessor = withoutFirst;
+                }
+            }
+            else
+            {
+                var obj = (ScriptObject?)root.Reference;
+                if (obj == null) return new TreeResult(VoxValue.Null, false);
+
+                VoxValue newValue = obj.GetValue(newFirst);
+                root = newValue;
+                accessor = withoutFirst;
+            }
         }
     }
 
@@ -141,6 +178,8 @@ public class Scope(Scope? parent=null)
         }
         
         if (path[0].ToString() == "_") return VoxValue.Null;
+
+        
         
         var first = path.FirstOrDefault();
 

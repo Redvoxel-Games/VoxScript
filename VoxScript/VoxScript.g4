@@ -27,13 +27,23 @@ cont_for: CONT_FOR '(' (for_object | for_repeat | for_range) ')' (('{' actionSet
 cont_return: CONT_RETURN expression?;
 cont_break: CONT_BREAK;
 cont_continue: CONT_CONTINUE;
+
 func_call: identifier '(' (expression (',' expression)*)? ')';
-func_define: OBJ_FUNCTION identifier '(' (var_inst (',' var_inst)*)? ')' (('{' actionSet? '}') | action);
+func_define: OBJ_FUNCTION identifier '(' (var_inst (',' var_inst)*)? ')' type_reference? (('{' actionSet? '}') | action);
+
 var_define: (OBJ_VAR | OBJ_CONST) var_inst '=' expression;
 var_set: identifier '=' expression;
 var_arith: identifier ARITH_ASSIGN expression;
 var_incre: identifier (INCREMENT | DECREMENT);
-var_inst: identifier (':' identifier)?;
+var_inst: identifier type_reference?;
+
+type_define: OBJ_TYPE identifier type_inherit? '{' type_member* '}';
+type_inherit: '<<' identifier;
+type_member: (TYPE_PRIVATE | TYPE_PUBLIC)? TYPE_STATIC? (type_field | type_function) ';'*;
+type_field: identifier type_reference? ('=' expression)?;
+type_function: TYPE_VIRTUAL? identifier '(' (var_inst (',' var_inst)*)? ')' type_reference? (('{' actionSet? '}') | action)?;
+
+type_reference: (':' identifier);
 
 for_object: identifier ',' identifier 'in' expression;
 for_repeat: identifier CONT_FOR_AT expression CONT_FOR_REP expression CONT_FOR_ADD expression;
@@ -54,10 +64,10 @@ expression
     | NUMBER
     | STRING
     | BOOLEAN
+    | NULL
     | object
     | array
     | expression ('.' identifier)
-    | 'null'
     | condition=expression '?' primary=expression ':' secondary=expression
     | func_expr
     | func_call
@@ -94,14 +104,20 @@ OBJ_FUNCTION: 'function';
 OBJ_TYPE: 'type';
 OBJ_VAR: 'var';
 OBJ_CONST: 'const';
+// >Types
+TYPE_STATIC: 'static';
+TYPE_VIRTUAL: 'virtual';
+TYPE_PUBLIC: 'public';
+TYPE_PRIVATE: 'private';
 
 // Primitives
 NUMBER: ([1-9] [0-9]* | [0-9]) ('.' [0-9]+)?;
 STRING: '"' ( ESC | ~["\\\r\n] )* '"';
 BOOLEAN: TRUE | FALSE;
+NULL: 'null';
 fragment TRUE: 'true';
 fragment FALSE: 'false';
-ID: [a-zA-Z_]+;
+ID: [a-zA-Z_][a-zA-Z0-9_]+;
 
 fragment ESC
     : '\\' (

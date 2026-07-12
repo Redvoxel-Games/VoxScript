@@ -99,7 +99,8 @@ public class Program
             """;
         const string spanTest =
             """
-            obj.SpanTest("Test!");
+            print(span.SpanTest)
+            span.SpanTest("Test!")
             """;
         
         var scriptHandler = new VoxScriptHandler(spanTest);
@@ -112,6 +113,7 @@ public class Program
         
         scriptHandler.SetGlobal("vecTest", vecTest);
         scriptHandler.SetGlobal("obj", externals);
+        scriptHandler.SetGlobal("span", ExposeToScriptAttribute.ExposeStaticMethods(typeof(TestExternals)));
         scriptHandler.SetGlobal("abst", new AbstractTest2());
         
         scriptHandler.Run();
@@ -127,15 +129,15 @@ public class TestExternals
     public double Tst => number + 1;
 
     [ExposeAs]
-    public void SpanTest(ReadOnlySpan<char> span)
+    public static void SpanTest(ReadOnlySpan<char> span)
     {
-        Console.WriteLine(span);
+        Console.WriteLine("sp:" + span.ToString());
     }
 
     [ExposeAs]
-    public void SpanTest(string span)
+    public static void SpanTest(string span)
     {
-        Console.WriteLine(span);
+        Console.WriteLine("st:" + span);
     }
 }
 

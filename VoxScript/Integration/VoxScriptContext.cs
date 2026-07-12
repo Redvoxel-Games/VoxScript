@@ -72,7 +72,11 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
                                 var parameter = parameters[i];
                                 // Convert arg to parameter type if possible
                                 var type = parameter.ParameterType;
-                                if (TryConvert(args[i], type, out var value))
+                                if (i >= args.Count)
+                                {
+                                    invokeArgs[i] = parameter.DefaultValue;
+                                }
+                                else if (TryConvert(args[i], type, out var value))
                                 {
                                     invokeArgs[i] = value;
                                 } else throw new InvalidCastException("Cannot convert value to parameter type of " + type.Name);
@@ -88,49 +92,31 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
     public static bool TryConvert(VoxValue value, Type type, out object? result)
     {
         result = null;
-        
-        if (type == typeof(double)) result = (double)value;
+
+        if (value.Reference is ExternalField field && field.FieldType == type) result = field.fieldInfo.GetValue(field.reference);
+        else if (value.Reference is ExternalProperty prop && prop.PropertyType == type) result = prop.propertyInfo.GetValue(prop.reference);
+        else if (type == typeof(double)) result = (double)value;
         else if (type == typeof(float)) result = (float)(double)value;
         else if (type == typeof(int)) result = (int)(double)value;
         else if (type == typeof(long)) result = (long)(double)value;
         else if (type == typeof(string)) result = value.ToString();
         else if (type == typeof(VoxValue)) result = value;
+        else if (value is { Type: VVT.Object, Reference: VoxExternalObject externalObject } && externalObject.RefType == type)
+        {
+            result = externalObject.ConvertBack();
+        }
         
         return result != null;
     }
 
     public static ScriptObject ToVoxObject(object obj)
     {
-        return new VoxExternalObject(obj);
+        return VoxExternalObject.ExposeType(obj.GetType(), obj);
     }
 
-    public static ScriptObject ExposeStaticMethods(Type type)
+    public static ScriptObject ExposeStatic(Type type)
     {
-        VoxObject obj = new();
-        
-        var methods = type.GetMethods()
-            .Where(m => m.GetCustomAttribute<ExposeAsAttribute>() != null)
-            .GroupBy(m =>
-            {
-                var attr = m.GetCustomAttribute<ExposeAsAttribute>();
-                return attr?.Name ?? m.Name;
-            });
-        
-        foreach (var group in methods)
-        {
-            var bestMethod = group
-                .OrderByDescending(GetMethodScore)
-                .First();
-
-            var func = ToFunction(bestMethod, obj);
-
-            if (func == null)
-                continue;
-
-            obj.SetValue(group.Key, func);
-        }
-
-        return obj;
+        return VoxExternalObject.ExposeType(type, null);
     }
     
     internal static int GetMethodScore(MethodInfo method)

@@ -134,6 +134,42 @@ public interface IVoxScriptVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitVar_inst([NotNull] VoxScriptParser.Var_instContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="VoxScriptParser.type_define"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitType_define([NotNull] VoxScriptParser.Type_defineContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="VoxScriptParser.type_inherit"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitType_inherit([NotNull] VoxScriptParser.Type_inheritContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="VoxScriptParser.type_member"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitType_member([NotNull] VoxScriptParser.Type_memberContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="VoxScriptParser.type_field"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitType_field([NotNull] VoxScriptParser.Type_fieldContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="VoxScriptParser.type_function"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitType_function([NotNull] VoxScriptParser.Type_functionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="VoxScriptParser.type_reference"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitType_reference([NotNull] VoxScriptParser.Type_referenceContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="VoxScriptParser.for_object"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

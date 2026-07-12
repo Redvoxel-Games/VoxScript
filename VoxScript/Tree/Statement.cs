@@ -6,6 +6,7 @@ namespace VoxScript.Tree;
 
 public abstract class Statement : AstNode
 {
+    public int LineNumber { get; internal set; }
     public abstract VoxValue Execute(Scope scope);
 }
 
@@ -42,14 +43,21 @@ public class VariableRedefinition(
     }
 }
 
-public class ArithmeticAssignment(
-    IdentifierExpression identifier,
-    string operation,
-    Expression value) : Statement
+public class ArithmeticAssignment : Statement
 {
-    public IdentifierExpression Identifier { get; } = identifier;
-    public string Operation { get; } = operation;
-    public Expression Value { get; } = value;
+    public IdentifierExpression Identifier { get; }
+    public string Operation { get; }
+    public Expression Value { get; }
+
+    public ArithmeticAssignment(
+        IdentifierExpression identifier,
+        string operation,
+        Expression value)
+    {
+        Identifier = identifier;
+        Operation = operation;
+        Value = value;
+    }
 
     public override VoxValue Execute(Scope scope)
     {
@@ -121,10 +129,18 @@ public class StatementSet(List<Statement> statements) : Statement
         ResetScope(scope);
         foreach (var statement in Statements)
         {
-            var returned = statement.Execute(StatementScope);
-            if (returned.Type is VoxValueType.Return or VoxValueType.Break or VoxValueType.Continue)
+            try
             {
-                return returned;
+                var returned = statement.Execute(StatementScope);
+                if (returned.Type is VoxValueType.Return or VoxValueType.Break or VoxValueType.Continue)
+                {
+                    return returned;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                throw new Exception($"Line {statement.LineNumber}: {e.Message}");
             }
         }
         return VoxValue.Null;
@@ -248,7 +264,8 @@ public class FunctionCall(
                 List<VoxValue> inputs = [];
                 foreach (var param in Parameters)
                 {
-                    inputs.Add(ExpressionMath.EvaluateValue(param, scope));
+                    var res = ExpressionMath.EvaluateValue(param, scope);
+                    inputs.Add(res);
                 }
                 
                 return func.Invoke(inputs);
