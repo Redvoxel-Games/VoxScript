@@ -14,9 +14,9 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/Redvoxel-Games/VoxScript</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>1.0.7</Version>
+    <Version>1.0.8</Version>
     <PackageReleaseNotes>
-      Methods with overloads now prefer overloads with strings and overloads with ref-like params are now rejected entirely.
+      Fixed issues that popped up during integration into voxgen
     </PackageReleaseNotes>
     <PackageTags>Language</PackageTags>
   </PropertyGroup>
