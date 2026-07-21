@@ -104,10 +104,10 @@ public class IdentifierExpression : Expression
 
     public override string ToString()
     {
-        var str = "";
-        foreach (var m in Path)
+        var str = Path[0].ToString();
+        foreach (var m in Path.GetRange(1, Path.Count - 1))
         {
-            str += m.ToString() + ".";
+            str += "." + m.ToString();
         }
         return str;
     }
@@ -116,6 +116,11 @@ public class IdentifierExpression : Expression
     {
         return new IdentifierExpression([new LiteralExpression(single)]);
     }
+}
+
+public class PostfixFunctionExpression(List<Expression> inputs) : Expression
+{
+    public List<Expression> Inputs { get; } = inputs;
 }
 
 public class ObjectExpression(List<Expression> keys, List<Expression> values) : Expression

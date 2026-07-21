@@ -17,6 +17,60 @@ public static class ExpressionMath
         };
     }
 
+    public static VoxValue EvaluateIdentifier(IdentifierExpression identifier, Scope scope, bool secondLast = false)
+    {
+        var current = scope.GetValue(EvaluateValue(identifier.Path.First(), scope));
+        for (var i=1; i<identifier.Path.Count; i++)
+        {
+            if (i == identifier.Path.Count - 1 && secondLast)
+                return current;
+            
+            var expr = identifier.Path[i];
+            
+            if (expr is PostfixFunctionExpression postfix)
+            {
+                // Prev current should be function type
+                if (current.Type == VoxValueType.Function)
+                {
+                    var func = current.Reference as VoxFunctionBase;
+
+                    List<VoxValue> inputs = [];
+                    foreach (var inputExpr in postfix.Inputs)
+                    {
+                        inputs.Add(EvaluateValue(inputExpr, scope));
+                    }
+                    
+                    current = func.Invoke(inputs);
+                    continue;
+                }
+                
+                throw new Exception("Attempt to call non-function value.");
+            }
+            else
+            {
+                var indexer = EvaluateValue(expr, scope);
+
+                if (current.Type == VoxValueType.String && indexer.Type == VoxValueType.Number)
+                {
+                    current = current.Value.StringValue[(int)indexer.Value.NumberValue];
+                    continue;
+                }
+                if (current.Type == VoxValueType.Object && indexer.Type != VoxValueType.Null)
+                {
+                    var obj = current.Reference as ScriptObject;
+
+                    current = obj.GetValue(indexer);
+                    continue;
+                }
+                
+                Console.WriteLine(current.ToString(), indexer.ToString());
+                throw new Exception("Attempt to index " + current.Type + " with " + indexer.Type);
+            }
+        }
+        
+        return current;
+    }
+
     /// <summary>
     /// Recursive simplification function to avoid dramatic overhead evaluating entire expressions on the fly.
     /// </summary>
@@ -100,7 +154,7 @@ public static class ExpressionMath
     {
         if (expression is IdentifierExpression identifier)
         {
-            return scope.GetValue(identifier);
+            return EvaluateIdentifier(identifier, scope);
         }
 
         if (expression is LiteralExpression literal)
@@ -156,7 +210,7 @@ public static class ExpressionMath
             }
             if (call.Target is IdentifierExpression id)
             {
-                var val = scope.GetValue(id);
+                var val = EvaluateIdentifier(id, scope);
                 if (val.Type == VoxValueType.Function)
                 {
                     var func = (VoxFunctionBase?)val.Reference;
@@ -187,7 +241,7 @@ public static class ExpressionMath
     {
         if (expression is IdentifierExpression identifier)
         {
-            return scope.GetValue(identifier);
+            return EvaluateIdentifier(identifier, scope);
         }
         
         if (expression is LiteralExpression literal)
@@ -446,7 +500,7 @@ public static class ExpressionMath
             }
             else if (call.Target is IdentifierExpression id)
             {
-                var val = scope.GetValue(id);
+                var val = EvaluateIdentifier(id, scope);
                 if (val.Type == VoxValueType.Function)
                 {
                     var func = (VoxFunctionBase?)val.Reference;

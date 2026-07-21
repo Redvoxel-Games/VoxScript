@@ -27,6 +27,8 @@ public class VoxScriptHandler
         ScriptRoot = builder.Build(tree);
         _currentScope = ScriptRoot.GlobalScope;
     }
+    
+    public Scope GlobalScope => ScriptRoot.GlobalScope;
 
     public void SetGlobal(string name, object value)
     {

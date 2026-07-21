@@ -361,6 +361,16 @@ public interface IVoxScriptListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitIden_seg_text([NotNull] VoxScriptParser.Iden_seg_textContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.iden_seg_func"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterIden_seg_func([NotNull] VoxScriptParser.Iden_seg_funcContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.iden_seg_func"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitIden_seg_func([NotNull] VoxScriptParser.Iden_seg_funcContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="VoxScriptParser.iden_seg_expr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

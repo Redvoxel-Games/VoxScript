@@ -10,10 +10,11 @@ public class VoxFunction(FunctionDeclaration declaration, Scope parent) : VoxFun
 {
     public FunctionDeclaration Declaration { get; } = declaration;
     public Scope ParentScope { get; } = parent;
+    public Scope ThisScope = new Scope(parent);
 
     public override VoxValue Invoke(List<VoxValue> args)
     {
-        var returned = Declaration.Invoke(ParentScope, args);
+        var returned = Declaration.Invoke(ThisScope, args);
         if (returned.Type is VoxValueType.Return)
         {
             var value = returned.Reference;
@@ -32,6 +33,8 @@ public class VoxFunctionExpr(FunctionExpression function, Scope parent) : VoxFun
     public override VoxValue Invoke(List<VoxValue> args)
     {
         var bodyScope =  Function.Body.StatementScope;
+        
+        bodyScope.Clear();
 
         int index = 0;
         foreach (var parameter in Function.Parameters)

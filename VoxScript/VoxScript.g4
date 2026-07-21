@@ -53,32 +53,35 @@ for_range: identifier CONT_FOR_FROM expression CONT_FOR_TO expression CONT_FOR_P
 expression
     : '(' expression ')'
     | '!' expression
-    | '-' expression
+    | MINUS expression
     | left=expression op='^' right=expression
     | left=expression op=MUL_DIV right=expression
     | left=expression op=ADD_SUB right=expression
     | left=expression op=COND_AND right=expression
     | left=expression op=COND_OR right=expression
     | left=expression op=COMPARE right=expression
-    | identifier
     | NUMBER
     | STRING
     | BOOLEAN
     | NULL
     | object
     | array
-    | expression ('.' identifier)
     | condition=expression '?' primary=expression ':' secondary=expression
     | func_expr
     | func_call
+    | identifier
     ;
 object: '{' (objItem (',' objItem)*) '}';
 objItem: expression '=' expression;
 array: '[' (expression (',' expression)*)? ']';
-identifier: ID iden_seg*;
-iden_seg: iden_seg_text | iden_seg_expr;
+
+identifier: (ID iden_seg*) | '_';
+
+iden_seg: iden_seg_text | iden_seg_expr | iden_seg_func;
 iden_seg_text: '.' ID;
+iden_seg_func: '(' (expression (',' expression)*)? ')';
 iden_seg_expr: '[' expression ']';
+
 func_expr: OBJ_FUNCTION '(' (var_inst (',' var_inst)*)? ')' '{' actionSet? '}';
 
 
@@ -111,13 +114,13 @@ TYPE_PUBLIC: 'public';
 TYPE_PRIVATE: 'private';
 
 // Primitives
-NUMBER: ([1-9] [0-9]* | [0-9]) ('.' [0-9]+)?;
+NUMBER: MINUS? ([1-9] [0-9]* | [0-9]) ('.' [0-9]+)?;
 STRING: '"' ( ESC | ~["\\\r\n] )* '"';
 BOOLEAN: TRUE | FALSE;
 NULL: 'null';
 fragment TRUE: 'true';
 fragment FALSE: 'false';
-ID: [a-zA-Z_][a-zA-Z0-9_]+;
+ID: [a-zA-Z_][a-zA-Z0-9_]*;
 
 fragment ESC
     : '\\' (
@@ -155,6 +158,7 @@ DIVIDE: '/';
 EXPONENT: '^';
 MODULO: '%';
 EQUALS: '=';
+PERIOD: '.';
 // >Direct
 INCREMENT: '++';
 DECREMENT: '--';

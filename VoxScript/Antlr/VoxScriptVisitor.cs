@@ -230,6 +230,12 @@ public interface IVoxScriptVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitIden_seg_text([NotNull] VoxScriptParser.Iden_seg_textContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="VoxScriptParser.iden_seg_func"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitIden_seg_func([NotNull] VoxScriptParser.Iden_seg_funcContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="VoxScriptParser.iden_seg_expr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

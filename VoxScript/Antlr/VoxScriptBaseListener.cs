@@ -432,6 +432,18 @@ public partial class VoxScriptBaseListener : IVoxScriptListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitIden_seg_text([NotNull] VoxScriptParser.Iden_seg_textContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="VoxScriptParser.iden_seg_func"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterIden_seg_func([NotNull] VoxScriptParser.Iden_seg_funcContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="VoxScriptParser.iden_seg_func"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitIden_seg_func([NotNull] VoxScriptParser.Iden_seg_funcContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="VoxScriptParser.iden_seg_expr"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

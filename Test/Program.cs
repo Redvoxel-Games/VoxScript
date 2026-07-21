@@ -102,8 +102,16 @@ public class Program
             print(span.SpanTest)
             span.SpanTest("Test!")
             """;
+        const string negTest =
+            """
+            var num = 5
+            var neg = -5
+            print(num)
+            print(neg)
+            print(-num)
+            """;
         
-        var scriptHandler = new VoxScriptHandler(spanTest);
+        var scriptHandler = new VoxScriptHandler(negTest);
 
         scriptHandler.AddContext(new Context());
 
@@ -113,7 +121,7 @@ public class Program
         
         scriptHandler.SetGlobal("vecTest", vecTest);
         scriptHandler.SetGlobal("obj", externals);
-        scriptHandler.SetGlobal("span", ExposeToScriptAttribute.ExposeStaticMethods(typeof(TestExternals)));
+        scriptHandler.SetGlobal("span", ExposeToScriptAttribute.ExposeStatic(typeof(TestExternals)));
         scriptHandler.SetGlobal("abst", new AbstractTest2());
         
         scriptHandler.Run();

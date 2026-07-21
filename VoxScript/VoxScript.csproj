@@ -14,9 +14,9 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/Redvoxel-Games/VoxScript</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>1.0.8</Version>
+    <Version>1.1.0</Version>
     <PackageReleaseNotes>
-      Fixed issues that popped up during integration into voxgen
+      Fixed massive issue with postfixes in identifiers
     </PackageReleaseNotes>
     <PackageTags>Language</PackageTags>
   </PropertyGroup>

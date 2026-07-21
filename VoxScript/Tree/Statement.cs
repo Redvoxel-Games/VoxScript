@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices.JavaScript;
 using VoxScript.Runtime;
 
@@ -24,7 +25,9 @@ public class VariableDeclaration(
     public override VoxValue Execute(Scope scope)
     {
         var value = ExpressionMath.EvaluateValue(Initializer, scope);
-        scope.SetValue(new IdentifierExpression([new LiteralExpression(Name)]), value, true);
+        Console.WriteLine("V:" + value.ToString());
+        scope.SetValue(new IdentifierExpression([new LiteralExpression(Name)]), value);
+        Console.WriteLine("Stored:" + scope.GetValue(Name).ToString());
         return VoxValue.Null;
     }
 }
@@ -61,7 +64,7 @@ public class ArithmeticAssignment : Statement
 
     public override VoxValue Execute(Scope scope)
     {
-        var existing = scope.GetValue(Identifier);
+        var existing = ExpressionMath.EvaluateIdentifier(Identifier, scope);
         VoxValue newVal = existing;
         if (existing is { Type: VoxValueType.Number })
         {
@@ -101,7 +104,7 @@ public class IncrementAssignment(IdentifierExpression identifier, bool negative)
 
     public override VoxValue Execute(Scope scope)
     {
-        var existing = scope.GetValue(Identifier);
+        var existing = ExpressionMath.EvaluateIdentifier(Identifier, scope);
         VoxValue newVal = existing;
         if (existing is { Type: VoxValueType.Number })
         {
@@ -227,6 +230,8 @@ public class FunctionDeclaration(
 
     public VoxValue Invoke(Scope scope, List<VoxValue> args)
     {
+        scope.Clear();
+        
         int index = 0;
         foreach (var parameter in Parameters)
         {
@@ -239,7 +244,7 @@ public class FunctionDeclaration(
     
     public override VoxValue Execute(Scope scope)
     {
-        scope.SetValue(Identifier, new VoxFunction(this, scope), true);
+        scope.SetValue(Identifier, new VoxFunction(this, scope));
         
         return VoxValue.Null;
     }
@@ -254,7 +259,7 @@ public class FunctionCall(
     
     public override VoxValue Execute(Scope scope)
     {
-        VoxValue potentialFunc = scope.GetValue(Identifier);
+        VoxValue potentialFunc = ExpressionMath.EvaluateIdentifier(Identifier, scope);
 
         if (potentialFunc.Type == VoxValueType.Function)
         {
@@ -270,6 +275,10 @@ public class FunctionCall(
                 
                 return func.Invoke(inputs);
             }
+        }
+        else
+        {
+            throw new Exception("Attempt to call non-function value. (" + potentialFunc.Type + ")");
         }
         
         return VoxValue.Null;

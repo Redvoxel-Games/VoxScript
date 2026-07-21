@@ -36,7 +36,7 @@ public class ForRepeat(IdentifierExpression identifier, Expression initialValue,
         _repeatCount--;
         if (_repeatCount <= 0) continueExecuting = false;
         
-        scope.SetValue(Identifier, _value, true);
+        scope.SetValue(Identifier, _value);
         _value += _valueDelta;
         
         var result = set.Execute(scope);
@@ -70,7 +70,7 @@ public class ForRange(IdentifierExpression identifier, Expression from, Expressi
 
     public override ForCallResult Execute(StatementSet set, Scope scope)
     {
-        scope.SetValue(Identifier, _value, true);
+        scope.SetValue(Identifier, _value);
         _value += _increment;
         
         var dirToEnd = Math.Sign(_to - _value);

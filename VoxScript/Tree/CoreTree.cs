@@ -166,12 +166,7 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
             return new CallExpression(
                 (Expression)Visit(context.func_call().identifier()), arguments);
         }
-
-        if (context.func_expr() != null)
-        {
-            return (FunctionExpression)Visit(context.func_expr());
-        }
-
+        
         if (context is { left: not null, right: not null })
         {
             var left =
@@ -183,6 +178,11 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
             var op = context.op.Text;
 
             return SimplifyExpr(new BinaryExpression(left, op, right));
+        }
+
+        if (context.func_expr() != null)
+        {
+            return (FunctionExpression)Visit(context.func_expr());
         }
 
         if (context is { condition: not null, primary: not null, secondary: not null })
@@ -214,6 +214,9 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
 
     public override AstNode VisitIdentifier(IdentifierContext context)
     {
+        if (context.GetText() == "_")
+            return new IdentifierExpression([new LiteralExpression("_")]);
+        
         List<Expression> path = [];
         path.Add(new LiteralExpression(context.ID().GetText()));
         foreach (var child in context.iden_seg())
@@ -228,6 +231,17 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
             if (expr != null)
             {
                 path.Add((Expression)Visit(expr.expression()));
+            }
+
+            var func = child.iden_seg_func();
+            if (func != null)
+            {
+                var post = new PostfixFunctionExpression([]);
+                foreach (var ex in func.expression())
+                {
+                    post.Inputs.Add((Expression)Visit(ex));
+                }
+                path.Add(post);
             }
         }
         return new IdentifierExpression(path);
