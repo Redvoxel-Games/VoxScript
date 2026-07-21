@@ -63,7 +63,6 @@ public static class ExpressionMath
                     continue;
                 }
                 
-                Console.WriteLine(current.ToString(), indexer.ToString());
                 throw new Exception("Attempt to index " + current.Type + " with " + indexer.Type);
             }
         }

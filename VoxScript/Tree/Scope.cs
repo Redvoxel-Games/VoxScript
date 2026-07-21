@@ -80,6 +80,15 @@ public class Scope(Scope? parent=null)
             {
                 _values[ExpressionMath.EvaluateValue(accessor.Path.Last(), this)] = value;
             }
+            else if (accessor.Path.Count == 1)
+            {
+                var key = ExpressionMath.EvaluateValue(accessor.Path.Last(), this);
+                var scopeToSetIn = BackPropagate(key);
+                if (scopeToSetIn != null)
+                {
+                    scopeToSetIn._values[key] = value;
+                }
+            }
             else if (objToCreateIn.Type == VoxValueType.Object)
             {
                 var obj = objToCreateIn.Reference as ScriptObject;
@@ -100,11 +109,6 @@ public class Scope(Scope? parent=null)
     public VoxValue GetValue(string name)
     {
         if (name == "_") return VoxValue.Null;
-
-        if (name == "input")
-        {
-            Console.WriteLine("a:" + IsGlobal + "," + _values.ContainsKey(name));
-        }
         
         if (_values.TryGetValue(name, out VoxValue value))
             return value;

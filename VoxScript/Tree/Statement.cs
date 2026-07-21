@@ -25,9 +25,7 @@ public class VariableDeclaration(
     public override VoxValue Execute(Scope scope)
     {
         var value = ExpressionMath.EvaluateValue(Initializer, scope);
-        Console.WriteLine("V:" + value.ToString());
         scope.SetValue(new IdentifierExpression([new LiteralExpression(Name)]), value);
-        Console.WriteLine("Stored:" + scope.GetValue(Name).ToString());
         return VoxValue.Null;
     }
 }

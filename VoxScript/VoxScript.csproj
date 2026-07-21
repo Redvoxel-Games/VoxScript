@@ -14,9 +14,9 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/Redvoxel-Games/VoxScript</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <PackageReleaseNotes>
-      Fixed massive issue with postfixes in identifiers
+      Fixed issues with scope level values not being able to be set
     </PackageReleaseNotes>
     <PackageTags>Language</PackageTags>
   </PropertyGroup>
