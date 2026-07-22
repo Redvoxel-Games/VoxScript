@@ -1,6 +1,7 @@
 ﻿using VoxScript;
 using VoxScript.Integration;
 using VoxScript.Runtime;
+using VoxScript.Test;
 
 namespace Test;
 
@@ -8,212 +9,63 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        const string fibTest =
+        List<ScriptTest> tests = [];
+        tests.Add(new IndexPerformanceTest("", 0, "Zero index test"));
+        tests.Add(new IndexPerformanceTest("pr(\"t\")", 1, "Single index test"));
+        tests.Add(new IndexPerformanceTest("pr(\"1\"); pr(\"2\")", 2, "Double index test"));
+        
+        tests.Add(new VarPerformanceTest("", 0, 0, "Zero var test"));
+        tests.Add(new VarPerformanceTest("var a = 10", 1, 1, "Single var test"));
+
+        string forPerfTest =
             """
-            print("Fibonacci sequence:")
-            var a = 1
-            var b = 2
-            while (a < 10000) {
-                var c = a + b
-                a = b
-                b = c
-                print(c)
-            }
-            print("Done!")
-            """;
-        const string varToVarTest =
-            """
-            var a = 10
-            var b = 20
-            b = a + b
-            print(b)
-            """;
-        const string externalTest =
-            """
-            print(obj.num)
-            obj.num = 1
-            print(obj.num)
-            """;
-        const string forTest =
-            """
-            print("Repeat:")
-            for (num at 0 do 10 add 1) {
-                print(num)
-            }
+            var obj = [1,2,3,4,5,6,7,8,9,10]
             
-            print("Range:")
-            for (num from 0 to 10 per 2) {
-                print(num)
+            for (_, _ in obj) {
+                var a = 10
             }
             """;
-        const string objectTest =
+        
+        tests.Add(new VarPerformanceTest(forPerfTest, 41, 31, "For var index test"));
+        
+        string forPerfTest2 =
             """
-            var testObj = [
-                "Hello, world!",
-                "Second item",
-                obj.num
-            ]
-            print(obj)
-            obj.num = 10
-            print(testObj[3])
-            print(obj.num)
-            """;
-        const string functionTest =
-            """
-            function testFunc(text) {
-                print(text)
-                return 3.14159
+            var obj = [1,2,3,4,5,6,7,8,9,10]
+
+            var a
+            for (_, _ in obj) {
+                a = 10
             }
-            print(testFunc("Hello, World!"))
-            """;
-        const string scriptTest =
-            """
-            var result = addNum(1, 2)
-            print(result)
-            """;
-        const string abstractTest =
-            """
-            print(abst.a + abst.b)
-            """;
-        const string arithTest =
-            """
-            var a = 11
-            print(a)
-            a%=10
-            print(a)
-            """;
-        const string externalObjectTest =
-            """
-            var vec = newVec(3.14, 159)
-            
-            vecTest.Vector = vec;
-            print(vecTest.Vector)
-            """;
-        const string propertyTest =
-            """
-            print(obj.test)
-            """;
-        const string engineTest =
-            """
-            vecTest.TestTransfer(3.14159)
-            """;
-        const string spanTest =
-            """
-            print(span.SpanTest)
-            span.SpanTest("Test!")
-            """;
-        const string negTest =
-            """
-            var num = 5
-            var neg = -5
-            print(num)
-            print(neg)
-            print(-num)
             """;
         
-        var scriptHandler = new VoxScriptHandler(negTest);
-
-        scriptHandler.AddContext(new Context());
-
-        var externals = new TestExternals();
-
-        var vecTest = new VectorContainer();
+        tests.Add(new VarPerformanceTest(forPerfTest2, 42, 32, "For var index test 2"));
         
-        scriptHandler.SetGlobal("vecTest", vecTest);
-        scriptHandler.SetGlobal("obj", externals);
-        scriptHandler.SetGlobal("span", ExposeToScriptAttribute.ExposeStatic(typeof(TestExternals)));
-        scriptHandler.SetGlobal("abst", new AbstractTest2());
         
-        scriptHandler.Run();
-    }
-}
+        var totalTests = tests.Count;
+        var successes = 0;
+        var failures = 0;
+        var overshoots = 0;
 
-public class TestExternals
-{
-    [ExposeAs("num")]
-    public double number = 3.14159;
-
-    [ExposeAs("test")]
-    public double Tst => number + 1;
-
-    [ExposeAs]
-    public static void SpanTest(ReadOnlySpan<char> span)
-    {
-        Console.WriteLine("sp:" + span.ToString());
-    }
-
-    [ExposeAs]
-    public static void SpanTest(string span)
-    {
-        Console.WriteLine("st:" + span);
-    }
-}
-
-public abstract class AbstractTest1
-{
-    [ExposeAs]
-    public string a = "Hello,";
-}
-
-public class AbstractTest2 : AbstractTest1
-{
-    [ExposeAs]
-    public string b = " World!";
-}
-
-public class VectorContainer
-{
-    [ExposeAs] public Vector? Vector = null;
-
-    [ExposeAs]
-    public void TestTransfer(VoxValue a)
-    {
-        Console.WriteLine("|" + a.ToString());
-    }
-
-    [ExposeAs]
-    public Vector CreateVec()
-    {
-        Console.WriteLine("Test");
-        return new Vector(1,2);
-    }
-}
-
-public class Vector(double x, double y)
-{
-    [ExposeAs] public double X = x;
-    [ExposeAs] public double Y = y;
-
-    public override string ToString()
-    {
-        return $"({X}, {Y})";
-    }
-}
-
-[ExposeToScript(ContextType.Individual)]
-public class Context
-{
-    [ExposeAs]
-    public Vector newVec(double x, double y)
-    {
-        return new Vector(x, y);
-    }
-    
-    [ExposeAs("print")]
-    public VoxValue Print(params VoxValue[] input)
-    {
-        string str = input[0].ToString();
-        foreach (var inp in input[1..])
+        foreach (ScriptTest test in tests)
         {
-            str += " " + inp.ToString();
+            Console.WriteLine("");
+            Console.WriteLine(string.Concat(Enumerable.Repeat("-", 25)));
+            Console.WriteLine("PERFORMING TEST: '" + test.Name + "'\n");
+            
+            test.RunTest();
+            TestResult result = test.EndTest();
+            
+            Console.WriteLine("\nRESULT: " + result.Result + ", " + result.Message);
+            
+            if (result.Result == TestResultType.Success) successes++;
+            if (result.Result == TestResultType.Failure) failures++;
+            if (result.Result == TestResultType.Overshoot) overshoots++;
         }
-        Console.WriteLine(": "+str);
-        return VoxValue.Null;
-    }
-
-    [ExposeAs("addNum")]
-    public double Add(double a, double b)
-    {
-        return a + b;
+        
+        Console.WriteLine(string.Concat(Enumerable.Repeat("-", 25)));
+        Console.WriteLine("RESULTS:");
+        Console.WriteLine("S: " + successes);
+        Console.WriteLine("F: " + failures);
+        Console.WriteLine("O: " + overshoots);
     }
 }

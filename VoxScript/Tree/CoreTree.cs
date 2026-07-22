@@ -115,6 +115,14 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         {
             throw new Exception($"{GetLineString(nameIdent)} Invalid variable name");
         }
+
+        var expr = context.expression();
+
+        if (expr == null)
+        {
+            return new VariableDeclaration(name, type, context.OBJ_CONST() != null,
+                new NullExpression());
+        }
         
         return new VariableDeclaration(name, type, context.OBJ_CONST() != null, (Expression)Visit(context.expression()));
     }

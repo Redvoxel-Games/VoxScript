@@ -8,6 +8,13 @@ public class Scope(Scope? parent=null)
 {
     private readonly Dictionary<string, VoxValue> _values = new();
     public Scope? ParentScope { get; internal set; } = parent;
+    
+    internal bool _testMode = false;
+
+    public bool TestMode => ParentScope?.TestMode ?? _testMode;
+
+    internal VoxScriptHandler? _handler;
+    public VoxScriptHandler? Handler => _handler ?? ParentScope?.Handler;
 
     internal void Clear()
     {
@@ -44,6 +51,13 @@ public class Scope(Scope? parent=null)
     /// <param name="forceThisScope">Whether to force the value to be set in this scope.</param>
     public void SetValue(IdentifierExpression accessor, VoxValue value)
     {
+        if (TestMode) Console.WriteLine("Setting " + accessor + " to " + value.ToString());
+        
+        if (TestMode)
+        {
+            Handler?.TestScopeSet();
+        }
+        
         if (accessor.ToString() == "_") return;
         
         var valueToSet = ExpressionMath.EvaluateIdentifier(accessor, this);
@@ -75,13 +89,27 @@ public class Scope(Scope? parent=null)
         }
         else
         {
-            var objToCreateIn = ExpressionMath.EvaluateIdentifier(accessor, this, true);
+            VoxValue objToCreateIn;
+            if (accessor.Path.Count == 1)
+            {
+                objToCreateIn = valueToSet;
+            }
+            else
+            {
+                objToCreateIn = ExpressionMath.EvaluateIdentifier(accessor, this, true);
+            }
             if (objToCreateIn.Type == VoxValueType.Null && accessor.Path.Count == 1)
             {
-                _values[ExpressionMath.EvaluateValue(accessor.Path.Last(), this)] = value;
+                if (valueToSet.Type == VoxValueType.Null)
+                {
+                    if (TestMode) Console.WriteLine("Doing eval from scope set 1");
+                    _values[ExpressionMath.EvaluateValue(accessor.Path.Last(), this)] = value;
+                }
+                else _values[valueToSet] = value;
             }
             else if (accessor.Path.Count == 1)
             {
+                if (TestMode) Console.WriteLine("Doing eval from scope set 2");
                 var key = ExpressionMath.EvaluateValue(accessor.Path.Last(), this);
                 var scopeToSetIn = BackPropagate(key);
                 if (scopeToSetIn != null)
@@ -94,6 +122,7 @@ public class Scope(Scope? parent=null)
                 var obj = objToCreateIn.Reference as ScriptObject;
                 if (obj != null)
                 {
+                    if (TestMode) Console.WriteLine("Doing eval from scope set 3");
                     obj.SetValue(ExpressionMath.EvaluateValue(accessor.Path.Last(), this), value);
                 }
             }

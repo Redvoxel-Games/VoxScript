@@ -31,7 +31,7 @@ cont_continue: CONT_CONTINUE;
 func_call: identifier '(' (expression (',' expression)*)? ')';
 func_define: OBJ_FUNCTION identifier '(' (var_inst (',' var_inst)*)? ')' type_reference? (('{' actionSet? '}') | action);
 
-var_define: (OBJ_VAR | OBJ_CONST) var_inst '=' expression;
+var_define: (OBJ_VAR | OBJ_CONST) var_inst ('=' expression)?;
 var_set: identifier '=' expression;
 var_arith: identifier ARITH_ASSIGN expression;
 var_incre: identifier (INCREMENT | DECREMENT);

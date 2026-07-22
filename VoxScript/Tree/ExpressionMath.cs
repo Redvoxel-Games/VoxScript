@@ -19,6 +19,13 @@ public static class ExpressionMath
 
     public static VoxValue EvaluateIdentifier(IdentifierExpression identifier, Scope scope, bool secondLast = false)
     {
+        if (scope.TestMode) Console.WriteLine("Indexing: " + identifier);
+        if (scope.TestMode)
+        {
+            scope.Handler?.TestIndex();
+        }
+        
+        if (scope.TestMode) Console.WriteLine("Doing eval from evaliden 1");
         var current = scope.GetValue(EvaluateValue(identifier.Path.First(), scope));
         for (var i=1; i<identifier.Path.Count; i++)
         {
@@ -37,6 +44,7 @@ public static class ExpressionMath
                     List<VoxValue> inputs = [];
                     foreach (var inputExpr in postfix.Inputs)
                     {
+                        if (scope.TestMode) Console.WriteLine("Doing eval from evaliden 2");
                         inputs.Add(EvaluateValue(inputExpr, scope));
                     }
                     
@@ -48,6 +56,7 @@ public static class ExpressionMath
             }
             else
             {
+                if (scope.TestMode) Console.WriteLine("Doing eval from evaliden 3");
                 var indexer = EvaluateValue(expr, scope);
 
                 if (current.Type == VoxValueType.String && indexer.Type == VoxValueType.Number)
@@ -151,6 +160,9 @@ public static class ExpressionMath
     
     public static VoxValue EvaluateValue(Expression expression, Scope scope)
     {
+        if (scope.TestMode) Console.WriteLine("Evaluating (vox) " + expression);
+        if (expression is NullExpression) return VoxValue.Null;
+        
         if (expression is IdentifierExpression identifier)
         {
             return EvaluateIdentifier(identifier, scope);
@@ -323,6 +335,9 @@ public static class ExpressionMath
     
     public static object? EvaluateExpression(Expression expression, Scope scope)
     {
+        if (scope.TestMode) Console.WriteLine("Evaluating (native) " + expression);
+        if (expression is NullExpression) return VoxValue.Null;
+        
         if (expression is IdentifierExpression identifier)
         {
             return EvaluateIdentifier(identifier, scope);

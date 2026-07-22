@@ -133,3 +133,5 @@ public class ArrayExpression(List<Expression> values) : Expression
 {
     public List<Expression> Values { get; } = values;
 }
+
+public class NullExpression : Expression;

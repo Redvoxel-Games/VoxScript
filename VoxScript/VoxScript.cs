@@ -2,6 +2,7 @@
 using Antlr4.Runtime;
 using VoxScript.Integration;
 using VoxScript.Runtime;
+using VoxScript.Test;
 using VoxScript.Tree;
 
 namespace VoxScript;
@@ -9,7 +10,31 @@ namespace VoxScript;
 public class VoxScriptHandler
 {
     private RootNode ScriptRoot { get; } = null!;
-    private Scope _currentScope = null!;
+    private ScriptTest? _currentTest = null;
+
+    internal void TestIndex()
+    {
+        if (_currentTest?.ReceiveEvents ?? false) _currentTest?.TestOnIndex();
+    }
+
+    internal void TestScopeGet()
+    {
+        if (_currentTest?.ReceiveEvents ?? false) _currentTest?.TestScopeGet();
+    }
+
+    internal void TestScopeSet()
+    {
+        if (_currentTest?.ReceiveEvents ?? false) _currentTest?.TestScopeSet();
+    }
+    internal void TestExprEvalNative() => _currentTest?.TestExprEvalNative();
+    internal void TestExprEvalVox() => _currentTest?.TestExprEvalVox();
+
+    public void EnableTestMode(ScriptTest test)
+    {
+        GlobalScope._testMode = true;
+        GlobalScope._handler = this;
+        _currentTest = test;
+    }
     
     public VoxScriptHandler(string content)
     {
@@ -25,7 +50,6 @@ public class VoxScriptHandler
         var builder = new AstBuilder();
 
         ScriptRoot = builder.Build(tree);
-        _currentScope = ScriptRoot.GlobalScope;
     }
     
     public Scope GlobalScope => ScriptRoot.GlobalScope;
