@@ -36,19 +36,6 @@ public class BaseEnv
     }
 }
 
-public class SyntaxTest(string source, string name) : ScriptTest(name)
-{
-    private string _src = source;
-    private TestResult result;
-    
-    public override void RunTest()
-    {
-        var handler = new VoxScriptHandler(_src);
-        
-        
-    }
-}
-
 public class IndexPerformanceTest(string source, int expectedIndexCount, string name) : ScriptTest(name)
 {
     private string _src = source;
