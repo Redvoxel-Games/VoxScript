@@ -14,9 +14,9 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/Redvoxel-Games/VoxScript</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <PackageReleaseNotes>
-      Fixed issues with scope level values not being able to be set
+      Fixed issues with different things relating to math with objects
     </PackageReleaseNotes>
     <PackageTags>Language</PackageTags>
   </PropertyGroup>

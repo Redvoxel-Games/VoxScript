@@ -44,44 +44,6 @@ public class ForRepeat(IdentifierExpression identifier, Expression initialValue,
     }
 }
 
-public class ForRange(IdentifierExpression identifier, Expression from, Expression to, Expression increment) : ForModeImpl
-{
-    public IdentifierExpression Identifier { get; } = identifier;
-    public Expression RawFrom { get; } = from;
-    public Expression RawTo { get; } = to;
-    public Expression RawIncrement { get; } = increment;
-
-    private double _from;
-    private double _to;
-    private double _increment;
-    private double _value;
-    private double? _prevDir;
-
-    public override void Reset(Scope scope)
-    {
-        _from = ExpressionMath.EvaluateValue(RawFrom, scope);
-        _to = ExpressionMath.EvaluateValue(RawTo, scope);
-        _increment = ExpressionMath.EvaluateValue(RawIncrement, scope);
-        _increment = Math.Abs(_increment) * Math.Sign(_to - _from);
-        
-        _value = _from;
-        _prevDir = null;
-    }
-
-    public override ForCallResult Execute(StatementSet set, Scope scope)
-    {
-        scope.SetValue(Identifier, _value);
-        _value += _increment;
-        
-        var dirToEnd = Math.Sign(_to - _value);
-        bool continueExecuting = _prevDir == null || dirToEnd == _prevDir;
-        _prevDir = dirToEnd;
-        
-        var result = set.Execute(scope);
-        return new ForCallResult(result, continueExecuting);
-    }
-}
-
 public class ForEach(IdentifierExpression keyIden, IdentifierExpression valIden, Expression obj) : ForModeImpl
 {
     public IdentifierExpression KeyIdentifier { get; } = keyIden;
@@ -119,6 +81,6 @@ public class ForEach(IdentifierExpression keyIden, IdentifierExpression valIden,
         
         var result = set.Execute(scope);
 
-        return new ForCallResult(result, _index < _keys.Count - 1);
+        return new ForCallResult(result, _index < _keys.Count);
     }
 }

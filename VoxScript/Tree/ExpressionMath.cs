@@ -236,6 +236,91 @@ public static class ExpressionMath
 
         return VoxValue.Null;
     }
+
+    public static object? PerformOp(object left, object right, string operation)
+    {
+        if (left is VoxValue lv)
+        {
+            if (lv.Type == VoxValueType.Number)
+            {
+                left = lv.Value.NumberValue;
+            }
+            else if (lv.Type == VoxValueType.Boolean)
+            {
+                left = lv.Value.BooleanValue;
+            }
+            else if (lv.Type == VoxValueType.String)
+            {
+                left = lv.Value.StringValue;
+            }
+            else if (lv.Type == VoxValueType.Object)
+            {
+                var reference = lv.Reference;
+                if (reference is VoxExternalObject externalObject)
+                {
+                    left = externalObject.ConvertBack();
+                }
+            }
+        }
+        if (right is VoxValue rv)
+        {
+            if (rv.Type == VoxValueType.Number)
+            {
+                right = rv.Value.NumberValue;
+            }
+            else if (rv.Type == VoxValueType.Boolean)
+            {
+                right = rv.Value.BooleanValue;
+            }
+            else if (rv.Type == VoxValueType.String)
+            {
+                right = rv.Value.StringValue;
+            }
+            else if (rv.Type == VoxValueType.Object)
+            {
+                var reference = rv.Reference;
+                if (reference is VoxExternalObject externalObject)
+                {
+                    right = externalObject.ConvertBack();
+                }
+            }
+        }
+        
+        var leftType = left.GetType();
+        var rightType = right.GetType();
+        
+        var leftMultOps = leftType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+
+        foreach (var op in leftMultOps)
+        {
+            if (op.Name != operation) continue;
+            
+            var param = op.GetParameters();
+        
+            if (param[0].ParameterType != leftType) continue;
+            if (param[1].ParameterType != rightType) continue;
+
+            return op.Invoke(null, [left, right]);
+        }
+        
+        
+        var rightMultOps = rightType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+        
+        foreach (var op in rightMultOps)
+        {
+            if (op.Name != operation) continue;
+            
+            var param = op.GetParameters();
+        
+            if (param[0].ParameterType != leftType) continue;
+            if (param[1].ParameterType != rightType) continue;
+
+            return op.Invoke(null, [left, right]);
+        }
+
+        return null;
+    }
+    
     public static object? EvaluateExpression(Expression expression, Scope scope)
     {
         if (expression is IdentifierExpression identifier)
@@ -282,7 +367,7 @@ public static class ExpressionMath
                     {
                         VoxExternalObject lo = (VoxExternalObject)leftObj.Reference;
                         
-                        VoxValue rightVal = (VoxValue) right;
+                        VoxValue rightVal = VoxValue.FromObject(right);
                         
                         if (rightVal is { Type: VVT.Object, Reference: VoxExternalObject })
                         {
@@ -331,6 +416,10 @@ public static class ExpressionMath
                     {
                         return (double)left + str3;
                     }
+                    
+                    var opResult = PerformOp(left, right, "op_Addition");
+                    if (opResult != null) return opResult;
+                    
                     return (double)left + (double)right;
                 }
                 case "-":
@@ -371,6 +460,9 @@ public static class ExpressionMath
                     {
                         return v1.Value.NumberValue - v2.Value.NumberValue;
                     }
+                    var opResult = PerformOp(left, right, "op_Subtraction");
+                    if (opResult != null) return opResult;
+                    
                     return (double)left - (double)right;
                 }
                 case "*":
@@ -415,6 +507,9 @@ public static class ExpressionMath
                     {
                         return v1.Value.NumberValue * v2.Value.NumberValue;
                     }
+                    var opResult = PerformOp(left, right, "op_Multiply");
+                    if (opResult != null) return opResult;
+                    
                     return (double)left * (double)right;
                 }
                 case "/":
@@ -455,6 +550,9 @@ public static class ExpressionMath
                     {
                         return v1.Value.NumberValue / v2.Value.NumberValue;
                     }
+                    var opResult = PerformOp(left, right, "op_Division");
+                    if (opResult != null) return opResult;
+                    
                     return (double)left / (double)right;
                 }
                 case "^":

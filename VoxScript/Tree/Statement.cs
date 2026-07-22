@@ -63,6 +63,7 @@ public class ArithmeticAssignment : Statement
     public override VoxValue Execute(Scope scope)
     {
         var existing = ExpressionMath.EvaluateIdentifier(Identifier, scope);
+        
         VoxValue newVal = existing;
         if (existing is { Type: VoxValueType.Number })
         {
@@ -79,8 +80,9 @@ public class ArithmeticAssignment : Statement
                 "^=" => Math.Pow(existing, pVal),
                 _ => throw new ArgumentOutOfRangeException()
             };
+            scope.SetValue(Identifier, newVal);
         }
-        if (existing is { Type: VoxValueType.String } && Operation is "+=" or "*=")
+        else if (existing is { Type: VoxValueType.String } && Operation is "+=" or "*=")
         {
             var pVal = ExpressionMath.EvaluateValue(Value, scope);
             
@@ -89,8 +91,30 @@ public class ArithmeticAssignment : Statement
             {
                 newVal = string.Concat(Enumerable.Repeat(existing.ToString(), (int)pVal));
             }
+            scope.SetValue(Identifier, newVal);
         }
-        scope.SetValue(Identifier, newVal);
+        else
+        {
+            string op = Operation switch
+            {
+                "+=" => "op_Addition",
+                "-=" => "op_Subtraction",
+                "*=" => "op_Multiply",
+                "/=" => "op_Division"
+            };
+
+            var res = ExpressionMath.PerformOp(existing, ExpressionMath.EvaluateValue(Value, scope), op);
+            newVal = VoxValue.FromObject(res);
+            if (newVal.Type != VoxValueType.Null)
+            {
+                scope.SetValue(Identifier, newVal);
+            }
+            else
+            {
+                throw new ArithmeticException("Failed to do math operation");
+            }
+        }
+        
         return VoxValue.Null;
     }
 }

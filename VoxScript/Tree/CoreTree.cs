@@ -333,21 +333,12 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         if (context.for_repeat() != null)
         {
             var mode = context.for_repeat();
+            var expressions = mode.expression();
             impl = new ForRepeat(
                 (IdentifierExpression)Visit(mode.identifier()),
-                (Expression)Visit(mode.expression(0)),
-                (Expression)Visit(mode.expression(1)),
-                (Expression)Visit(mode.expression(2))
-            );
-        }
-        if (context.for_range() != null)
-        {
-            var mode = context.for_range();
-            impl = new ForRange(
-                (IdentifierExpression)Visit(mode.identifier()),
-                (Expression)Visit(mode.expression(0)),
-                (Expression)Visit(mode.expression(1)),
-                (Expression)Visit(mode.expression(2))
+                (Expression)Visit(expressions[0]),
+                (Expression)Visit(expressions[1]),
+                expressions.Length == 3 ? (Expression)Visit(expressions[2]) : new LiteralExpression(1)
             );
         }
         

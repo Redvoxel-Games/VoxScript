@@ -34,7 +34,7 @@ public class VoxObject : ScriptObject, IEnumerable<KeyValuePair<VoxValue, VoxVal
 
     public VoxValue this[VoxValue key]
     {
-        get => Values[IndexOfKey(key)];
+        get => HasKey(key) ? Values[IndexOfKey(key)] : VoxValue.Null;
         set
         {
             if (!Keys.Contains(key))

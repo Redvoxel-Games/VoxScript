@@ -336,18 +336,6 @@ public partial class VoxScriptBaseListener : IVoxScriptListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitFor_repeat([NotNull] VoxScriptParser.For_repeatContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="VoxScriptParser.for_range"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterFor_range([NotNull] VoxScriptParser.For_rangeContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="VoxScriptParser.for_range"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitFor_range([NotNull] VoxScriptParser.For_rangeContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="VoxScriptParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

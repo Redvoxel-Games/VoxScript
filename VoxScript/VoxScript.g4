@@ -23,7 +23,7 @@ action
 cont_if: CONT_IF '(' expression ')' (('{' actionSet? '}') | action) cont_else?;
 cont_else: CONT_ELSE (('{' actionSet? '}') | action);
 cont_while: CONT_WHILE '(' expression ')' (('{' actionSet? '}') | action);
-cont_for: CONT_FOR '(' (for_object | for_repeat | for_range) ')' (('{' actionSet? '}') | action);
+cont_for: CONT_FOR '(' (for_object | for_repeat) ')' (('{' actionSet? '}') | action);
 cont_return: CONT_RETURN expression?;
 cont_break: CONT_BREAK;
 cont_continue: CONT_CONTINUE;
@@ -46,8 +46,7 @@ type_function: TYPE_VIRTUAL? identifier '(' (var_inst (',' var_inst)*)? ')' type
 type_reference: (':' identifier);
 
 for_object: identifier ',' identifier 'in' expression;
-for_repeat: identifier CONT_FOR_AT expression CONT_FOR_REP expression CONT_FOR_ADD expression;
-for_range: identifier CONT_FOR_FROM expression CONT_FOR_TO expression CONT_FOR_PER expression;
+for_repeat: identifier '=' expression 'do' expression (',' expression)?;
 
 // Evaluation
 expression
@@ -92,12 +91,8 @@ func_expr: OBJ_FUNCTION '(' (var_inst (',' var_inst)*)? ')' '{' actionSet? '}';
 CONT_IF: 'if';
 CONT_ELSE: 'else';
 CONT_FOR: 'for';
-CONT_FOR_AT: 'at';
-CONT_FOR_ADD: 'add';
-CONT_FOR_REP: 'do';
-CONT_FOR_FROM: 'from';
-CONT_FOR_TO: 'to';
-CONT_FOR_PER: 'per';
+CONT_FOR_IN: 'in';
+CONT_FOR_DO: 'do';
 CONT_WHILE: 'while';
 CONT_RETURN: 'return';
 CONT_BREAK: 'break';

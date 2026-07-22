@@ -182,12 +182,6 @@ public interface IVoxScriptVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFor_repeat([NotNull] VoxScriptParser.For_repeatContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="VoxScriptParser.for_range"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFor_range([NotNull] VoxScriptParser.For_rangeContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="VoxScriptParser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

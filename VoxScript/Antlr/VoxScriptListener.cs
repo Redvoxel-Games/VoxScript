@@ -281,16 +281,6 @@ public interface IVoxScriptListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitFor_repeat([NotNull] VoxScriptParser.For_repeatContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="VoxScriptParser.for_range"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterFor_range([NotNull] VoxScriptParser.For_rangeContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="VoxScriptParser.for_range"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitFor_range([NotNull] VoxScriptParser.For_rangeContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="VoxScriptParser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
