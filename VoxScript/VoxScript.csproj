@@ -14,9 +14,9 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/Redvoxel-Games/VoxScript</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>1.1.2</Version>
+    <Version>1.1.3</Version>
     <PackageReleaseNotes>
-      Fixed issues with different things relating to math with objects
+      Performance improvement with reflection caching
     </PackageReleaseNotes>
     <PackageTags>Language</PackageTags>
   </PropertyGroup>

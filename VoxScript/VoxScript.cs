@@ -29,7 +29,7 @@ public class VoxScriptHandler
     internal void TestExprEvalNative() => _currentTest?.TestExprEvalNative();
     internal void TestExprEvalVox() => _currentTest?.TestExprEvalVox();
 
-    public void EnableTestMode(ScriptTest test)
+    public void EnableTestMode(ScriptTest? test)
     {
         GlobalScope._testMode = true;
         GlobalScope._handler = this;

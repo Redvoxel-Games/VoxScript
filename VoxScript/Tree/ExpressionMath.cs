@@ -209,6 +209,7 @@ public static class ExpressionMath
 
         if (expression is BinaryExpression)
         {
+            if (scope.TestMode) Console.WriteLine("Evaluating native from vox 1");
             var expr = EvaluateExpression(expression, scope);
             return VoxValue.FromObject(expr);
         }
@@ -351,6 +352,7 @@ public static class ExpressionMath
         if (expression is UnaryExpression unary)
         {
             var operation = unary.Op;
+            if (scope.TestMode) Console.WriteLine("Evaluating native from native 1");
             var operand = EvaluateExpression(unary.Operand, scope) ?? throw new InvalidOperationException();
             switch (operation)
             {
@@ -362,7 +364,9 @@ public static class ExpressionMath
         if (expression is BinaryExpression binary)
         {
             var operation = binary.Operator;
+            if (scope.TestMode) Console.WriteLine("Evaluating native from native 2");
             var left = EvaluateExpression(binary.Left, scope) ?? throw new InvalidOperationException();
+            if (scope.TestMode) Console.WriteLine("Evaluating native from native 3");
             var right = EvaluateExpression(binary.Right, scope) ?? throw new InvalidOperationException();
             
             if (left is VoxValue { Type: VVT.Null } || right is VoxValue { Type: VVT.Null })

@@ -93,6 +93,7 @@ public class VoxExternalObject : ScriptObject
 {
     public object? Reference;
     public Type RefType;
+    public ReflectionResult ReflectionResult;
 
     private readonly List<string> Keys = [];
     private readonly List<VoxValue> Values = [];
@@ -106,40 +107,23 @@ public class VoxExternalObject : ScriptObject
 
     public static VoxExternalObject ExposeType(Type type, object? instance)
     {
-        var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic;
-        if (instance == null)
-        {
-            bindingFlags |= BindingFlags.Static;
-        }
-        else
-        {
-            bindingFlags |= BindingFlags.Instance;
-        }
-        
         VoxExternalObject voxObj = new VoxExternalObject();
         voxObj.Reference = instance;
         voxObj.RefType = type;
+        voxObj.ReflectionResult = ReflectionCache.Reflect(type, instance == null);
         
-        var fieldInfos = type.GetFields(bindingFlags);
-        foreach (var fieldInfo in fieldInfos)
+        foreach (var pair in voxObj.ReflectionResult.Fields)
         {
-            if (fieldInfo.GetCustomAttributes(typeof(ExposeAsAttribute), false).FirstOrDefault() is ExposeAsAttribute exposeAs)
-            {
-                string name = exposeAs.Name ?? fieldInfo.Name;
-
-                VoxValue value = new VoxValue(VoxValueType.ExternalValue, default, new ExternalField(fieldInfo, instance));
+            VoxValue value = new VoxValue(VoxValueType.ExternalValue, default, new ExternalField(pair.Value, instance));
                 
-                voxObj.Keys.Add(name);
-                voxObj.Values.Add(value);
-            }
+            voxObj.Keys.Add(pair.Key);
+            voxObj.Values.Add(value);
         }
         
-        var methods = type.GetMethods(bindingFlags)
-            .Where(m => m.GetCustomAttribute<ExposeAsAttribute>() != null)
-            .GroupBy(m =>
+        var methods = voxObj.ReflectionResult.Methods
+            .GroupBy(p =>
             {
-                var attr = m.GetCustomAttribute<ExposeAsAttribute>();
-                return attr?.Name ?? m.Name;
+                return p.Key;
             });
         
         foreach (var group in methods)
@@ -148,7 +132,7 @@ public class VoxExternalObject : ScriptObject
                 .OrderByDescending(ExposeToScriptAttribute.GetMethodScore)
                 .First();
 
-            var func = ExposeToScriptAttribute.ToFunction(bestMethod, instance);
+            var func = ExposeToScriptAttribute.ToFunction(bestMethod.Value.Method, instance);
 
             if (func == null)
                 continue;
@@ -157,18 +141,12 @@ public class VoxExternalObject : ScriptObject
             voxObj.Values.Add((VoxValue)func);
         }
         
-        var propertyInfos = type.GetProperties(bindingFlags);
-        foreach (var propertyInfo in propertyInfos)
+        foreach (var pair in voxObj.ReflectionResult.Properties)
         {
-            if (propertyInfo.GetCustomAttributes(typeof(ExposeAsAttribute), false).FirstOrDefault() is ExposeAsAttribute exposeAs)
-            {
-                string name = exposeAs.Name ?? propertyInfo.Name;
+            VoxValue value = new VoxValue(VoxValueType.ExternalValue, default, new ExternalProperty(pair.Value, instance));
                 
-                VoxValue value = new VoxValue(VoxValueType.ExternalValue, default, new ExternalProperty(propertyInfo, instance));
-                
-                voxObj.Keys.Add(name);
-                voxObj.Values.Add(value);
-            }
+            voxObj.Keys.Add(pair.Key);
+            voxObj.Values.Add(value);
         }
 
         return voxObj;

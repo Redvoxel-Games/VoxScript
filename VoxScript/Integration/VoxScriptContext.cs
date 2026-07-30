@@ -23,6 +23,8 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
 
     public static ContextFunction? ToFunction(MethodInfo methodInfo, object? context)
     {
+        // TODO: Implement delegates to further increase performance.
+        
         // Detect if method uses any ref structs and return null if so
         foreach (ParameterInfo parameter in methodInfo.GetParameters())
         {
@@ -119,11 +121,11 @@ public class ExposeToScriptAttribute(ContextType contextType, string? name=null)
         return VoxExternalObject.ExposeType(type, null);
     }
     
-    internal static int GetMethodScore(MethodInfo method)
+    internal static int GetMethodScore(KeyValuePair<string, MethodInfoCache> pair)
     {
         int score = 0;
 
-        foreach (var p in method.GetParameters())
+        foreach (var p in pair.Value.Parameters)
         {
             if (p.ParameterType == typeof(string))
                 score += 100;
