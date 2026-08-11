@@ -18,7 +18,7 @@ public class VoxFunction(FunctionDeclaration declaration, Scope parent) : VoxFun
         if (returned.Type is VoxValueType.Return)
         {
             var value = returned.Reference;
-            if (value is VoxValue v) return v; 
+            if (value is VoxValue v) return v;
         }
 
         return VoxValue.Null;
@@ -39,7 +39,7 @@ public class VoxFunctionExpr(FunctionExpression function, Scope parent) : VoxFun
         int index = 0;
         foreach (var parameter in Function.Parameters)
         {
-            bodyScope.SetValue(parameter, args[index]);
+            bodyScope.SetValueMapped(bodyScope.GetMapping(parameter.ToString()), args[index]);
             index++;
         }
         

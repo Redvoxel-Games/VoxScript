@@ -8,7 +8,8 @@ namespace VoxScript.Runtime;
 public enum VoxValueType
 {
     Null,
-    Number, 
+    Number,
+    Int, // TODO: Implement this
     String,
     Boolean,
     Object,

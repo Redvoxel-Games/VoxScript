@@ -11,10 +11,10 @@ public abstract class AstNode
     public int Column = -1;
 }
 
-public class RootNode(StatementSet statements) : AstNode
+public class RootNode(StatementSet statements, Scope globalScope) : AstNode
 {
     public StatementSet Statements { get; } = statements;
-    public Scope GlobalScope { get; } = new();
+    public Scope GlobalScope { get; } = globalScope;
 
     public VoxValue Run()
     {
@@ -29,7 +29,8 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
     private Scope? _currentScope;
     public RootNode Build(ProgramContext tree)
     {
-        _currentRoot = new RootNode((StatementSet)Visit(tree.actionSet()));
+        _currentScope = new Scope();
+        _currentRoot = new RootNode((StatementSet)Visit(tree.actionSet()), _currentScope);
         
         return _currentRoot;
     }
@@ -48,7 +49,7 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
             statement.LineNumber = action.Start.Line;
             statements.Add(statement);
         }
-        var set = new StatementSet(statements);
+        var set = new StatementSet(statements, _currentScope);
 
         return set;
     }
@@ -95,8 +96,8 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
             return (ReturnStatement)Visit(context.cont_return());
         }
 
-        if (context.cont_break() != null) return new BreakStatement();
-        if (context.cont_continue() != null) return new ContinueStatement();
+        if (context.cont_break() != null) return new BreakStatement(_currentScope);
+        if (context.cont_continue() != null) return new ContinueStatement(_currentScope);
         
         if (context.var_arith() != null) return (ArithmeticAssignment)Visit(context.var_arith());
         if (context.var_incre() != null) return (IncrementAssignment)Visit(context.var_incre());
@@ -121,10 +122,10 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         if (expr == null)
         {
             return new VariableDeclaration(name, type, context.OBJ_CONST() != null,
-                new NullExpression());
+                new NullExpression(), _currentScope);
         }
         
-        return new VariableDeclaration(name, type, context.OBJ_CONST() != null, (Expression)Visit(context.expression()));
+        return new VariableDeclaration(name, type, context.OBJ_CONST() != null, (Expression)Visit(context.expression()), _currentScope);
     }
 
     public override AstNode VisitVar_set(Var_setContext context)
@@ -132,7 +133,7 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         var identifier = (IdentifierExpression)Visit(context.identifier());
         var value = (Expression)Visit(context.expression());
         
-        return new VariableRedefinition(identifier, value);
+        return new VariableRedefinition(identifier, value, _currentScope);
     }
 
     private static Expression SimplifyExpr(Expression expression)
@@ -262,7 +263,7 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         {
             arguments.Add((Expression)Visit(expressionContext));
         }
-        FunctionCall call = new FunctionCall((IdentifierExpression)Visit(context.identifier()), arguments);
+        FunctionCall call = new FunctionCall((IdentifierExpression)Visit(context.identifier()), arguments, _currentScope);
         return call;
     }
 
@@ -280,7 +281,7 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
             paramList.Add((IdentifierExpression)Visit(name));
         }
 
-        FunctionDeclaration declaration = new FunctionDeclaration((IdentifierExpression)Visit(id), paramList, body);
+        FunctionDeclaration declaration = new FunctionDeclaration((IdentifierExpression)Visit(id), paramList, body, _currentScope);
         return declaration;
     }
 
@@ -294,18 +295,18 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         }
         else
         {
-            body = new StatementSet([(Statement)Visit(context.action())]);
+            body = new StatementSet([(Statement)Visit(context.action())], _currentScope);
         }
 
         var elseBody = context.cont_else() != null ? (StatementSet)Visit(context.cont_else()) : null;
         
-        return new IfStatement(cond, body, elseBody);
+        return new IfStatement(cond, body, elseBody, _currentScope);
     }
 
     public override AstNode VisitCont_else(Cont_elseContext context)
     {
         if (context.actionSet() != null) return Visit(context.actionSet());
-        return new StatementSet([(Statement)Visit(context.action())]);
+        return new StatementSet([(Statement)Visit(context.action())], _currentScope);
     }
 
     public override AstNode VisitCont_while(Cont_whileContext context)
@@ -319,10 +320,10 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         }
         else
         {
-            body = new StatementSet([(Statement)Visit(context.action())]);
+            body = new StatementSet([(Statement)Visit(context.action())], _currentScope);
         }
         
-        return new WhileStatement(cond, body);
+        return new WhileStatement(cond, body, _currentScope);
     }
 
     public override AstNode VisitCont_for(Cont_forContext context)
@@ -357,10 +358,10 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         }
         else
         {
-            body = new StatementSet([(Statement)Visit(context.action())]);
+            body = new StatementSet([(Statement)Visit(context.action())], _currentScope);
         }
 
-        return new ForStatement(impl, body);
+        return new ForStatement(impl, body, _currentScope);
     }
 
     public override AstNode VisitObject(ObjectContext context)
@@ -401,7 +402,7 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
 
     public override AstNode VisitCont_return(Cont_returnContext context)
     {
-        return new ReturnStatement((Expression)Visit(context.expression()));
+        return new ReturnStatement((Expression)Visit(context.expression()), _currentScope);
     }
 
     public override AstNode VisitVar_arith(Var_arithContext context)
@@ -410,7 +411,7 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         var operation = context.ARITH_ASSIGN().GetText();
         var value = (Expression)Visit(context.expression());
 
-        return new ArithmeticAssignment(identifier, operation, value);
+        return new ArithmeticAssignment(identifier, operation, value, _currentScope);
     }
 
     public override AstNode VisitVar_incre(Var_increContext context)
@@ -418,6 +419,6 @@ public class AstBuilder : VoxScriptBaseVisitor<AstNode>
         var identifier = (IdentifierExpression)Visit(context.identifier());
         var negative = context.INCREMENT() == null;
         
-        return new IncrementAssignment(identifier, negative);
+        return new IncrementAssignment(identifier, negative, _currentScope);
     }
 }

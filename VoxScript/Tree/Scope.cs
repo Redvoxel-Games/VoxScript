@@ -6,7 +6,9 @@ namespace VoxScript.Tree;
 
 public class Scope(Scope? parent=null)
 {
-    private readonly Dictionary<string, VoxValue> _values = new();
+    private readonly Dictionary<uint, VoxValue> _values = new();
+    private readonly Dictionary<string, uint> _localMapping = new();
+    
     public Scope? ParentScope { get; internal set; } = parent;
     
     internal bool _testMode = false;
@@ -36,11 +38,22 @@ public class Scope(Scope? parent=null)
     /// <returns>Target scope, null if none is found.</returns>
     private Scope? BackPropagate(string accessor)
     {
-        if (_values.TryGetValue(accessor, out var value))
+        uint mapped = GetMapping(accessor);
+        return BackPropagateMapped(mapped);
+    }
+
+    private Scope? BackPropagateMapped(uint mapped)
+    {
+        if (_values.TryGetValue(mapped, out var value))
         {
             return this;
         }
-        return ParentScope?.BackPropagate(accessor);
+        return ParentScope?.BackPropagateMapped(mapped);
+    }
+
+    public void SetValueMapped(uint mapped, VoxValue value)
+    {
+        _values[mapped] = value;
     }
 
     /// <summary>
@@ -103,9 +116,10 @@ public class Scope(Scope? parent=null)
                 if (valueToSet.Type == VoxValueType.Null)
                 {
                     if (TestMode) Console.WriteLine("Doing eval from scope set 1");
-                    _values[ExpressionMath.EvaluateValue(accessor.Path.Last(), this)] = value;
+                    string name = ExpressionMath.EvaluateValue(accessor.Path.Last(), this);
+                    _values[GetMapping(name)] = value;
                 }
-                else _values[valueToSet] = value;
+                else _values[GetMapping(valueToSet)] = value;
             }
             else if (accessor.Path.Count == 1)
             {
@@ -114,7 +128,8 @@ public class Scope(Scope? parent=null)
                 var scopeToSetIn = BackPropagate(key);
                 if (scopeToSetIn != null)
                 {
-                    scopeToSetIn._values[key] = value;
+                    uint mapped = scopeToSetIn.GetMapping(key);
+                    scopeToSetIn._values[mapped] = value;
                 }
             }
             else if (objToCreateIn.Type == VoxValueType.Object)
@@ -139,10 +154,32 @@ public class Scope(Scope? parent=null)
     {
         if (name == "_") return VoxValue.Null;
         
-        if (_values.TryGetValue(name, out VoxValue value))
-            return value;
+        uint mapped = GetMapping(name);
+        
+        return GetValueMapped(mapped);
+    }
 
-        return ParentScope?.GetValue(name) ?? VoxValue.Null;
+    public VoxValue GetValueMapped(uint mapped)
+    {
+        if (_values.TryGetValue(mapped, out VoxValue value))
+            return value;
+        
+        return ParentScope?.GetValueMapped(mapped) ?? VoxValue.Null;
+    }
+
+    public uint GetMapping(string name)
+    {
+        if (name == "_") return 0;
+        
+        var mapped = _localMapping.ContainsKey(name) ? _localMapping[name] : ParentScope?.GetMapping(name) ?? 0;
+
+        if (mapped == 0)
+        {
+            mapped = (uint) _localMapping.Count + 1;
+            _localMapping.Add(name, mapped);
+        }
+        
+        return mapped;
     }
 
     public bool IsGlobal => ParentScope == null;

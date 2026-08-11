@@ -165,6 +165,11 @@ public class VoxExternalObject : ScriptObject
             }
         }
 
+        if (Reference is IScriptIndexable indexable)
+        {
+            return indexable.GetScriptIndexResult(key);
+        }
+
         return VoxValue.Null;
     }
 
@@ -238,6 +243,29 @@ public class VoxExternalObject : ScriptObject
             return Reference.ToString() ?? Reference.GetType().Name;
         }
         return Reference.GetType().Name;
+    }
+
+    private bool ObjEq(VoxExternalObject externalObject)
+    {
+        if (Reference is Enum e1 && externalObject.Reference is Enum e2)
+        {
+            return Equals(e1, e2);
+        }
+        return externalObject.Reference != null && externalObject.Reference.Equals(Reference);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is VoxExternalObject extrObj) return ObjEq(extrObj);
+        if (obj is VoxValue { Type: VoxValueType.Object } voxValue)
+        {
+            if (voxValue.Reference is VoxExternalObject externalObject)
+            {
+                return ObjEq(externalObject);
+            }
+        }
+
+        return false;
     }
 }
 

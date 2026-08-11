@@ -145,6 +145,11 @@ ADD_SUB: PLUS | MINUS;
 COMPARE: COND_EQUAL | COND_NOTEQUAL | COND_GREATERTHAN | COND_LESSTHAN | COND_GREATEROREQUAL | COND_LESSOREQUAL;
 ARITH_ASSIGN: ADD_DIRECT | SUB_DIRECT | MULT_DIRECT | DIV_DIRECT | EXPO_DIRECT | MOD_DIRECT;
 
+// Channels
+WS: [ \n\r\t]+ -> skip;
+LINE_COMMENT: '//' .*? '\n' -> channel(HIDDEN);
+MULTILINE_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
+
 // >Eval
 PLUS: '+';
 MINUS: '-';
@@ -172,9 +177,3 @@ COND_GREATEROREQUAL: '>=';
 COND_LESSOREQUAL: '<=';
 COND_AND: '&&';
 COND_OR: '||';
-
-
-// Channels
-WS: [ \n\r\t]+ -> skip;
-LINE_COMMENT: '//' .*? '\n' -> skip;
-MULTILINE_COMMENT: '/*' .*? '*/' -> skip;

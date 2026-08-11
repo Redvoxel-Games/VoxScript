@@ -1,23 +1,28 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices.JavaScript;
 using VoxScript.Runtime;
 
 namespace VoxScript.Tree;
 
-public abstract class Statement : AstNode
+public abstract class Statement(Scope parentScope) : AstNode
 {
     public int LineNumber { get; internal set; }
     public abstract VoxValue Execute(Scope scope);
+    public Scope ParentScope { get; internal set; } = parentScope;
+    public Scope? StatementScope { get; internal set; }
 }
 
 public class VariableDeclaration(
     string name,
     Expression? type,
     bool isConst,
-    Expression initializer) : Statement
+    Expression initializer,
+    Scope parentScope) : Statement(parentScope)
 {
     public string Name { get; } = name;
+    public uint NameMapped { get; } = parentScope.GetMapping(name);
     public Expression? Type { get; } = type;
     public bool IsConstant { get; } = isConst;
     public Expression Initializer { get; } = initializer;
@@ -25,14 +30,15 @@ public class VariableDeclaration(
     public override VoxValue Execute(Scope scope)
     {
         var value = ExpressionMath.EvaluateValue(Initializer, scope);
-        scope.SetValue(new IdentifierExpression([new LiteralExpression(Name)]), value);
+        scope.SetValueMapped(NameMapped, value);
         return VoxValue.Null;
     }
 }
 
 public class VariableRedefinition(
     IdentifierExpression identifier,
-    Expression value) : Statement
+    Expression value,
+    Scope parentScope) : Statement(parentScope)
 {
     public IdentifierExpression Identifier { get; } = identifier;
     public Expression Value { get; } = value;
@@ -53,7 +59,8 @@ public class ArithmeticAssignment : Statement
     public ArithmeticAssignment(
         IdentifierExpression identifier,
         string operation,
-        Expression value)
+        Expression value,
+        Scope parentScope) : base(parentScope)
     {
         Identifier = identifier;
         Operation = operation;
@@ -119,7 +126,7 @@ public class ArithmeticAssignment : Statement
     }
 }
 
-public class IncrementAssignment(IdentifierExpression identifier, bool negative) : Statement
+public class IncrementAssignment(IdentifierExpression identifier, bool negative, Scope parentScope) : Statement(parentScope)
 {
     public IdentifierExpression Identifier { get; } = identifier;
     public double Sign { get; } = negative ? -1 : 1;
@@ -138,10 +145,15 @@ public class IncrementAssignment(IdentifierExpression identifier, bool negative)
     }
 }
 
-public class StatementSet(List<Statement> statements) : Statement
+public class StatementSet : Statement
 {
-    public List<Statement> Statements { get; } = statements;
-    public Scope StatementScope { get; } = new();
+    public List<Statement> Statements { get; }
+
+    public StatementSet(List<Statement> statements, Scope parentScope) : base(parentScope)
+    {
+        StatementScope = new Scope();
+        Statements = statements;
+    }
 
     public void ResetScope(Scope parent)
     {
@@ -175,8 +187,8 @@ public class StatementSet(List<Statement> statements) : Statement
 public class IfStatement(
     Expression condition,
     StatementSet thenBranch,
-    StatementSet? elseBranch)
-    : Statement
+    StatementSet? elseBranch,
+    Scope parentScope) : Statement(parentScope)
 {
     public Expression Condition { get; } = condition;
     public StatementSet ThenBranch { get; } = thenBranch;
@@ -195,7 +207,8 @@ public class IfStatement(
 
 public class WhileStatement(
     Expression condition,
-    StatementSet body) : Statement
+    StatementSet body,
+    Scope parentScope) : Statement(parentScope)
 {
     public Expression Condition { get; } = condition;
     public StatementSet Body { get; } = body;
@@ -219,7 +232,7 @@ public class WhileStatement(
     }
 }
 
-public class ForStatement(ForModeImpl mode, StatementSet body) : Statement
+public class ForStatement(ForModeImpl mode, StatementSet body, Scope parentScope) : Statement(parentScope)
 {
     public StatementSet Body { get; } = body;
     public ForModeImpl Mode { get; } = mode;
@@ -240,24 +253,39 @@ public class ForStatement(ForModeImpl mode, StatementSet body) : Statement
     }
 }
 
-public class FunctionDeclaration(
-    IdentifierExpression identifier,
-    List<IdentifierExpression> parameters,
-    StatementSet body)
-    : Statement
+public class FunctionDeclaration : Statement
 {
-    public IdentifierExpression Identifier { get; } = identifier;
-    public List<IdentifierExpression> Parameters { get; } = parameters;
-    public StatementSet Body { get; } = body;
+    public IdentifierExpression Identifier { get; }
+    public List<uint> ParamMappings { get; } = [];
+    public StatementSet Body { get; }
+
+    public FunctionDeclaration(
+        IdentifierExpression identifier,
+        List<IdentifierExpression> parameters,
+        StatementSet body,
+        Scope parentScope) : base(parentScope)
+    {
+        Identifier = identifier;
+        Body = body;
+
+        foreach (var parameter in parameters)
+        {
+            var str = parameter.Path.First().ToString();
+            
+            Debug.Assert(Body.StatementScope != null);
+            
+            ParamMappings.Add(Body.StatementScope.GetMapping(str));
+        }
+    }
 
     public VoxValue Invoke(Scope scope, List<VoxValue> args)
     {
         scope.Clear();
         
         int index = 0;
-        foreach (var parameter in Parameters)
+        foreach (var parameter in ParamMappings)
         {
-            scope.SetValue(parameter, args[index]);
+            scope.SetValueMapped(parameter, args[index]);
             index++;
         }
         
@@ -274,7 +302,8 @@ public class FunctionDeclaration(
 
 public class FunctionCall(
     IdentifierExpression identifier,
-    List<Expression> parameters) : Statement
+    List<Expression> parameters,
+    Scope parentScope) : Statement(parentScope)
 {
     public IdentifierExpression Identifier { get; } = identifier;
     public List<Expression> Parameters { get; } = parameters;
@@ -307,7 +336,7 @@ public class FunctionCall(
     }
 }
 
-public class ReturnStatement(Expression? value) : Statement
+public class ReturnStatement(Expression? value, Scope parentScope) : Statement(parentScope)
 {
     public Expression? Value { get; } = value;
     
@@ -317,7 +346,7 @@ public class ReturnStatement(Expression? value) : Statement
     }
 }
 
-public class BreakStatement : Statement
+public class BreakStatement(Scope parentScope) : Statement(parentScope)
 {
     public override VoxValue Execute(Scope scope)
     {
@@ -325,7 +354,7 @@ public class BreakStatement : Statement
     }
 }
 
-public class ContinueStatement : Statement
+public class ContinueStatement(Scope parentScope) : Statement(parentScope)
 {
     public override VoxValue Execute(Scope scope)
     {
