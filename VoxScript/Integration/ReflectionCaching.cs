@@ -13,6 +13,64 @@ public static class ReflectionCache
             (type, getStatic),
             key => new ReflectionResult(key.Item1, key.Item2));
     }
+
+    public static MethodInfo[] GetMethodsCached(this Type type, bool getStatic = false)
+    {
+        var reflectionResult = Reflect(type, getStatic);
+
+        var result = new MethodInfo[reflectionResult.Methods.Count];
+
+        int index = 0;
+        foreach (var methodInfo in reflectionResult.Methods)
+        {
+            result[index++] = methodInfo.Value.Method;
+        }
+        
+        return result;
+    }
+
+    public static MethodInfo GetMethodCached(this Type type, string name, bool getStatic = false)
+    {
+        var reflectionResult = Reflect(type, getStatic);
+        
+        return reflectionResult.Methods[name].Method;
+    }
+
+    public static MethodInfo? GetMethodCached(this Type type, string name, Type[] types, bool getStatic = false)
+    {
+        var reflectionResult = Reflect(type, getStatic);
+
+        List<MethodInfoCache> named = [];
+        
+        foreach (var methodInfo in reflectionResult.Methods.Values)
+        {
+            if (methodInfo.Method.Name == name)
+            {
+                named.Add(methodInfo);
+            }
+        }
+
+        foreach (var methodInfo in named)
+        {
+            if (methodInfo.Parameters.Count != types.Length)
+                continue;
+
+            var fits = true;
+            for (var i = 0; i < types.Length; i++)
+            {
+                if (types[i] != methodInfo.Parameters[i].ParameterType)
+                {
+                    fits = false;
+                    break;
+                }
+            }
+
+            if (fits)
+                return methodInfo.Method;
+        }
+
+        return null;
+    }
 }
 
 public class ReflectionResult
@@ -38,7 +96,7 @@ public class ReflectionResult
             var parameters = method.GetParameters();
             var cache = new MethodInfoCache
             {
-                Method = method
+                Method = method,
             };
             cache.Parameters.AddRange(parameters);
             Methods[expose.Name ?? method.Name] = cache;
@@ -71,4 +129,5 @@ public class MethodInfoCache
 {
     public MethodInfo Method;
     public readonly List<ParameterInfo> Parameters = [];
+    public Delegate? StaticDelegate;
 }

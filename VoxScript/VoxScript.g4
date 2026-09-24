@@ -1,8 +1,11 @@
 grammar VoxScript;
 
 // PARSER
-program: actionSet;
+program: properties? actionSet;
 actionSet: (action ';'*)*;
+
+// Properties
+properties: PROPERTIES '{' (objItem (';'* objItem)*)? ';'* '}';
 
 // Actions
 action
@@ -71,7 +74,7 @@ expression
     | identifier
     ;
 object: '{' (objItem (',' objItem)*) '}';
-objItem: expression '=' expression;
+objItem: expression type_reference? '=' expression;
 array: '[' (expression (',' expression)*)? ']';
 
 identifier: (ID iden_seg*) | '_';
@@ -107,6 +110,8 @@ TYPE_STATIC: 'static';
 TYPE_VIRTUAL: 'virtual';
 TYPE_PUBLIC: 'public';
 TYPE_PRIVATE: 'private';
+// >Misc
+PROPERTIES: 'PROPERTIES';
 
 // Primitives
 NUMBER: MINUS? ([1-9] [0-9]* | [0-9]) ('.' [0-9]+)?;

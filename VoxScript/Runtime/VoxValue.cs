@@ -9,7 +9,11 @@ public enum VoxValueType
 {
     Null,
     Number,
-    Int, // TODO: Implement this
+    // TODO:
+    Int,
+    Float,
+    Double,
+    // End todo
     String,
     Boolean,
     Object,
@@ -19,7 +23,6 @@ public enum VoxValueType
     Return, // Cancels current function (or script if it doesn't path to a function) execution and carries a single value
     Break, // Breaks highest loop, Carries no value
     Continue, // Skips highest loop, Carries no value
-    End, // Cancels current scope execution, Carries no value.
     Type,
 }
 
