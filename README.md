@@ -1,3 +1,6 @@
+This project will no longer be worked on, check out the new version:
+https://github.com/Redvoxel-Games/VoxScript2
+
 A basic scripting language made in C#.
 
 Created for an in-development roblox-like game engine called Voxgen.
